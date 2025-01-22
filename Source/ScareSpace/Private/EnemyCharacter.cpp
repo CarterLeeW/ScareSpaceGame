@@ -1,10 +1,10 @@
 // Copyright Carter Wooton
 
 
-#include "Character/APlayerCharacter.h"
+#include "EnemyCharacter.h"
 
 // Sets default values
-AAPlayerCharacter::AAPlayerCharacter()
+AEnemyCharacter::AEnemyCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -12,21 +12,21 @@ AAPlayerCharacter::AAPlayerCharacter()
 }
 
 // Called when the game starts or when spawned
-void AAPlayerCharacter::BeginPlay()
+void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
 // Called every frame
-void AAPlayerCharacter::Tick(float DeltaTime)
+void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
 // Called to bind functionality to input
-void AAPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AEnemyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
