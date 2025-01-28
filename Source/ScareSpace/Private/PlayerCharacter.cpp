@@ -10,6 +10,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Engine/LocalPlayer.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -38,6 +39,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	
 }
 
 // Called to bind functionality to input
@@ -49,6 +51,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+
+		// Crouching
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &APlayerCharacter::CrouchImplementation, false);
+		EnhancedInputComponent->BindAction(UnCrouchAction, ETriggerEvent::Started, this, &APlayerCharacter::UnCrouchImplementation, false);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
@@ -82,6 +88,31 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void APlayerCharacter::CrouchImplementation(bool bClientSimulation)
+{
+	if (GetCharacterMovement())
+	{
+		if (CanCrouch())
+		{
+			GetCharacterMovement()->bWantsToCrouch = true;
+		}
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+		else if (!GetCharacterMovement()->CanEverCrouch())
+		{
+			//UE_LOG(LogPlayerCharacter, Log, TEXT("%s is trying to crouch, but crouching is disabled on this character! (check CharacterMovement NavAgentSettings)"), *GetName());
+		}
+#endif
+	}
+}
+
+void APlayerCharacter::UnCrouchImplementation(bool bClientSimulation)
+{
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->bWantsToCrouch = false;
 	}
 }
 
