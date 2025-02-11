@@ -93,26 +93,34 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::CrouchImplementation(bool bClientSimulation)
 {
-	if (GetCharacterMovement())
+	if (GetCharacterMovement() && CanCrouch())
 	{
-		if (CanCrouch())
+		// Can this be cached on BeginPlay?
+		if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 		{
-			GetCharacterMovement()->bWantsToCrouch = true;
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+			{
+				Subsystem->AddMappingContext(CrouchedMappingContext, 1);
+				GetCharacterMovement()->bWantsToCrouch = true;
+			}
 		}
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-		else if (!GetCharacterMovement()->CanEverCrouch())
-		{
-			//UE_LOG(LogPlayerCharacter, Log, TEXT("%s is trying to crouch, but crouching is disabled on this character! (check CharacterMovement NavAgentSettings)"), *GetName());
-		}
-#endif
 	}
+	
+	
 }
 
 void APlayerCharacter::UnCrouchImplementation(bool bClientSimulation)
 {
 	if (GetCharacterMovement())
 	{
-		GetCharacterMovement()->bWantsToCrouch = false;
+		if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+			{
+				Subsystem->RemoveMappingContext(CrouchedMappingContext);
+				GetCharacterMovement()->bWantsToCrouch = false;
+			}
+		}
 	}
 }
 

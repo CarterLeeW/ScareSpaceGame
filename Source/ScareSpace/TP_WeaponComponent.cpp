@@ -2,7 +2,7 @@
 
 
 #include "TP_WeaponComponent.h"
-#include "ScareSpaceCharacter.h"
+#include "PlayerCharacter.h"
 #include "ScareSpaceProjectile.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
@@ -66,7 +66,7 @@ void UTP_WeaponComponent::Fire()
 	}
 }
 
-bool UTP_WeaponComponent::AttachWeapon(AScareSpaceCharacter* TargetCharacter)
+bool UTP_WeaponComponent::AttachWeapon(APlayerCharacter* TargetCharacter)
 {
 	Character = TargetCharacter;
 
