@@ -2,7 +2,7 @@
 
 
 #include "TP_WeaponComponent.h"
-#include "PlayerCharacter.h"
+#include "Character/PlayerCharacter.h"
 #include "ScareSpaceProjectile.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"

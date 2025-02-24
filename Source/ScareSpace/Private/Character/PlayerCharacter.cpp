@@ -1,7 +1,7 @@
 // Copyright Carter Wooton
 
 
-#include "PlayerCharacter.h"
+#include "Character/PlayerCharacter.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"

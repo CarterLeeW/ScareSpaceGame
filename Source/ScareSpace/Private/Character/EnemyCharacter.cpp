@@ -1,7 +1,7 @@
 // Copyright Carter Wooton
 
 
-#include "EnemyCharacter.h"
+#include "Character/EnemyCharacter.h"
 
 // Sets default values
 AEnemyCharacter::AEnemyCharacter()
