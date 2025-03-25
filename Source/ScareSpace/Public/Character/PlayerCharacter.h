@@ -22,6 +22,9 @@ public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
 
+	/** Public Functions */
+	float GetHandLength() { return HandLength; }
+
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* Mesh1P;
@@ -75,6 +78,10 @@ protected:
 	/** Called for crouching input */
 	void CrouchImplementation(bool bClientSimulation);
 	void UnCrouchImplementation(bool bClientSimulation);
+
+	// Attributes
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float HandLength = 300.0;
 
 public:	
 
