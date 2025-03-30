@@ -6,8 +6,10 @@
 #include "GameFramework/PlayerController.h"
 #include "MainPlayerController.generated.h"
 
+class UInputAction;
 class UInputMappingContext;
 class APlayerCharacter;
+struct FInputActionValue;
 
 /**
  * 
@@ -20,16 +22,56 @@ class SCARESPACE_API AMainPlayerController : public APlayerController
 public:
 	virtual void PlayerTick(float DeltaTime) override;
 
+	/** Jump Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* JumpAction;
+
+	/** Move Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* MoveAction;
+
+	/** Crouch Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* CrouchAction;
+
+	/** UnCrouch Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* UnCrouchAction;
+
+	/** Look Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* LookAction;
+
 protected:
 	/** Input Mapping Context to be used for player input */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputMappingContext> InputMappingContext;
+
+	/** Crouched MappingContext */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	class UInputMappingContext* CrouchedMappingContext;
+
+	/** Called for jump input using Character::Jump*/
+	void Jump();
+	void StopJumping();
+
+	/** Called for movement input */
+	void Move(const FInputActionValue& Value);
+
+	/** Called for looking input */
+	void Look(const FInputActionValue& Value);
+
+	/** Called for crouching input */
+	void CrouchImplementation();
+	void UnCrouchImplementation();
 
 	TObjectPtr<APlayerCharacter> PlayerCharacter;
 
 	// Begin Actor interface
 	virtual void BeginPlay() override;
 	// End Actor interface
+
+	virtual void SetupInputComponent() override;
 
 private:
 	/** 
