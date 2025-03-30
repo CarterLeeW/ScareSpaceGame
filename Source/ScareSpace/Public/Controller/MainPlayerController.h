@@ -22,6 +22,8 @@ class SCARESPACE_API AMainPlayerController : public APlayerController
 public:
 	virtual void PlayerTick(float DeltaTime) override;
 
+	/* Begin input actions */
+
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
@@ -42,7 +44,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	/* End input actions */
+
 protected:
+	/* Begin MappingContexts */
+
 	/** Input Mapping Context to be used for player input */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputMappingContext> InputMappingContext;
@@ -50,6 +56,10 @@ protected:
 	/** Crouched MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	class UInputMappingContext* CrouchedMappingContext;
+
+	/* End MappingContexts */
+
+	/* Begin Inputs */
 
 	/** Called for jump input using Character::Jump*/
 	void Jump();
@@ -64,6 +74,8 @@ protected:
 	/** Called for crouching input */
 	void CrouchImplementation();
 	void UnCrouchImplementation();
+
+	/* End Inputs */
 
 	TObjectPtr<APlayerCharacter> PlayerCharacter;
 
