@@ -32,5 +32,13 @@ protected:
 	// End Actor interface
 
 private:
-	void InteractionTrace();
+	/** 
+	* Performs a single trace along the visibility channel for objects that are within arms length of the character
+	* @param OutHit
+	*/
+	void ArmsLengthTrace(FHitResult& OutResult);
+
+	// The result of the ArmsLengthTrace(). Can be further evaluated
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess=true))
+	FHitResult ReachableTarget;
 };

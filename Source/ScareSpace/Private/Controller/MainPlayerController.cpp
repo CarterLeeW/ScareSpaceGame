@@ -13,7 +13,7 @@ void AMainPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	InteractionTrace();
+	ArmsLengthTrace(ReachableTarget);
 }
 
 void AMainPlayerController::BeginPlay()
@@ -30,24 +30,23 @@ void AMainPlayerController::BeginPlay()
 	PlayerCharacter = Cast<APlayerCharacter>(GetCharacter());
 }
 
-void AMainPlayerController::InteractionTrace()
+void AMainPlayerController::ArmsLengthTrace(FHitResult& OutResult)
 {
 	FVector TraceStart = PlayerCharacter->FirstPersonCameraComponent->GetComponentLocation();
 	FVector TraceEnd = TraceStart + (PlayerCharacter->FirstPersonCameraComponent->GetForwardVector() * PlayerCharacter->GetHandLength());
 
-	FHitResult HitResult;
-	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility);
+	GetWorld()->LineTraceSingleByChannel(OutResult, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility);
 
-	// We have a blocking hit, the actor is valid, and the actor implements the Interactable interface
-	if (HitResult.bBlockingHit && IsValid(HitResult.GetActor()))
-	{
-		if (HitResult.GetActor()->Implements<UInteractable>())
-		{
-			DrawDebugSphere(GetWorld(), HitResult.Location, 10.0, 12, FColor::Blue);
-		}
-		else
-		{
-			DrawDebugSphere(GetWorld(), HitResult.Location, 10.0, 12, FColor::Red);
-		}
-	}
+	//// We have a blocking hit, the actor is valid, and the actor implements the Interactable interface
+	//if (HitResult.bBlockingHit && IsValid(HitResult.GetActor()))
+	//{
+	//	if (HitResult.GetActor()->Implements<UInteractable>())
+	//	{
+	//		return HitResult.GetActor();
+	//	}
+	//	else
+	//	{
+	//		return nullptr;
+	//	}
+	//}
 }
