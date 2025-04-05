@@ -7,6 +7,7 @@
 #include "Character/PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Interaction/Interactable.h"
+#include "Interaction/InteractableComponent.h"
 #include "DrawDebugHelpers.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -76,6 +77,7 @@ void AMainPlayerController::BeginInteraction()
 	if (ReachableTargetHitResult.bBlockingHit && IsInteractable(ReachableTargetHitResult.GetActor()))
 	{
 		TScriptInterface Interactable = TScriptInterface<IInteractable>(ReachableTargetHitResult.GetActor());
+		Interactable.GetInterface()->GetInteractableComponent();
 	}
 }
 
