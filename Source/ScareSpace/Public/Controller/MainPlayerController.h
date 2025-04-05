@@ -25,25 +25,28 @@ public:
 	/* Begin input actions */
 
 	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* JumpAction;
 
 	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* MoveAction;
 
 	/** Crouch Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* CrouchAction;
 
 	/** UnCrouch Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* UnCrouchAction;
 
 	/** Look Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	class UInputAction* LookAction;
 
+	/* Interaction Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	class UInputAction* InteractAction;
 	/* End input actions */
 
 protected:
@@ -75,6 +78,10 @@ protected:
 	void CrouchImplementation();
 	void UnCrouchImplementation();
 
+	/* For interaction input */
+	void BeginInteraction();
+	void EndInteraction();
+
 	/* End Inputs */
 
 	TObjectPtr<APlayerCharacter> PlayerCharacter;
@@ -94,5 +101,11 @@ private:
 
 	// The result of the ArmsLengthTrace(). Can be further evaluated
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess=true))
-	FHitResult ReachableTarget;
+	FHitResult ReachableTargetHitResult;
+
+	/**
+	* Returns true if the actor implements the Interactable interface
+	* @param Actor to test
+	*/
+	bool IsInteractable(const AActor* Actor);
 };

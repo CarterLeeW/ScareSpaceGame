@@ -3,19 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
-#include "Interaction/InteractableComponent.h"
-#include "CollectComponent.generated.h"
+#include "Components/SceneComponent.h"
+#include "InteractableComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class SCARESPACE_API UCollectComponent : public UInteractableComponent
+class SCARESPACE_API UInteractableComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UCollectComponent();
+	UInteractableComponent();
 
 protected:
 	// Called when the game starts

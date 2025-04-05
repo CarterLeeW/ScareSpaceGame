@@ -22,4 +22,9 @@ class SCARESPACE_API IInteractable
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	/*
+	* Should return the Interaction Component associated with the object to be interacted with.
+	* This is required for the player to interact with the object.
+	*/
+	virtual void GetInteractionComponent() = 0;
 };

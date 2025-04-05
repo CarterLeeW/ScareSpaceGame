@@ -15,7 +15,7 @@ void AMainPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	ArmsLengthTrace(ReachableTarget);
+	ArmsLengthTrace(ReachableTargetHitResult);
 }
 
 void AMainPlayerController::Jump()
@@ -69,6 +69,19 @@ void AMainPlayerController::UnCrouchImplementation()
 			PlayerCharacter->GetCharacterMovement()->bWantsToCrouch = false;
 		}
 	}
+}
+
+void AMainPlayerController::BeginInteraction()
+{
+	if (ReachableTargetHitResult.bBlockingHit && IsInteractable(ReachableTargetHitResult.GetActor()))
+	{
+		TScriptInterface Interactable = TScriptInterface<IInteractable>(ReachableTargetHitResult.GetActor());
+	}
+}
+
+void AMainPlayerController::EndInteraction()
+{
+
 }
 
 void AMainPlayerController::BeginPlay()
@@ -126,4 +139,16 @@ void AMainPlayerController::ArmsLengthTrace(FHitResult& OutResult)
 	//		return nullptr;
 	//	}
 	//}
+}
+
+bool AMainPlayerController::IsInteractable(const AActor* Actor)
+{
+	if (Actor->Implements<UInteractable>())
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
