@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
-#include "Interaction/Interactable.h"
 #include "InteractableComponent.generated.h"
+
+DECLARE_MULTICAST_DELEGATE(OnInteractionEnded);
 
 /* Label for the type of interactable component */
 UENUM(BlueprintType)
@@ -28,5 +29,15 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactable")
 	EInteractableType InteractableType;
+
+	// Called when interaction is set to begin
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginInteraction();
+
+	// Called when interaction is set to end
+	UFUNCTION(BlueprintCallable)
+	virtual void EndInteraction();
+
+	OnInteractionEnded InteractionEnded;
 
 };

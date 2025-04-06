@@ -6,7 +6,6 @@
 #include "Engine/LocalPlayer.h"
 #include "Character/PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
-#include "Interaction/Interactable.h"
 #include "Interaction/InteractableComponent.h"
 #include "DrawDebugHelpers.h"
 #include "EnhancedInputComponent.h"
@@ -74,16 +73,22 @@ void AMainPlayerController::UnCrouchImplementation()
 
 void AMainPlayerController::BeginInteraction()
 {
-	// No targets are in reach, so there can be no interaction
-	if (!ReachableTargetHitResult.bBlockingHit)
+	// No targets are in reach, OR player is currently interacting, so there can be no new interaction
+	if (!ReachableTargetHitResult.bBlockingHit || bIsInteracting)
 	{
 		return;
 	}
 
+	// Will be nullptr if none exists
+	CurrentInteractableComponent = ReachableTargetHitResult.GetActor()->GetComponentByClass<UInteractableComponent>();
 	// The actor has an interactable component
-	if (UInteractableComponent* InteractableComponent = ReachableTargetHitResult.GetActor()->GetComponentByClass<UInteractableComponent>())
+	if (IsValid(CurrentInteractableComponent))
 	{
-		UE_LOG(LogTemp, Display, TEXT("Interactable actor %s"), *ReachableTargetHitResult.GetActor()->GetName());
+		bIsInteracting = true;
+		// The interactable object determines when the action is ended, which calls this controller's end function
+		CurrentInteractableComponent->InteractionEnded.AddUObject(this, &AMainPlayerController::EndInteraction);
+
+		CurrentInteractableComponent->BeginInteraction();
 	}
 	else
 	{
@@ -91,9 +96,19 @@ void AMainPlayerController::BeginInteraction()
 	}
 }
 
+void AMainPlayerController::RequestEndInteraction()
+{
+	// TODO: what if the interactable object becomes void before its InteractionEnded delegate is broadcast?
+	if (bIsInteracting)
+	{
+		UE_LOG(LogTemp, Display, TEXT("End interaction reached from AMainPlayerController::RequestEndInteraction"));
+		bIsInteracting = false;
+	}
+}
+
 void AMainPlayerController::EndInteraction()
 {
-
+	UE_LOG(LogTemp, Display, TEXT("End interaction reached from AMainPlayerController::EndInteraction"));
 }
 
 void AMainPlayerController::BeginPlay()
@@ -132,7 +147,7 @@ void AMainPlayerController::SetupInputComponent()
 
 		// Interaction
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AMainPlayerController::BeginInteraction);
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &AMainPlayerController::EndInteraction);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &AMainPlayerController::RequestEndInteraction);
 	}
 }
 

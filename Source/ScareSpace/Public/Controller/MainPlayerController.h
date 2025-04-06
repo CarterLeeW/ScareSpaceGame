@@ -10,6 +10,7 @@ class UInputAction;
 class UInputMappingContext;
 class APlayerCharacter;
 struct FInputActionValue;
+class UInteractableComponent;
 
 /**
  * 
@@ -26,27 +27,27 @@ public:
 
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* JumpAction;
+	TObjectPtr<UInputAction> JumpAction;
 
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* MoveAction;
+	TObjectPtr<UInputAction> MoveAction;
 
 	/** Crouch Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* CrouchAction;
+	TObjectPtr<UInputAction> CrouchAction;
 
 	/** UnCrouch Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* UnCrouchAction;
+	TObjectPtr<UInputAction> UnCrouchAction;
 
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	class UInputAction* LookAction;
+	TObjectPtr<UInputAction> LookAction;
 
 	/* Interaction Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	class UInputAction* InteractAction;
+	TObjectPtr<UInputAction> InteractAction;
 	/* End input actions */
 
 protected:
@@ -58,7 +59,7 @@ protected:
 
 	/** Crouched MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	class UInputMappingContext* CrouchedMappingContext;
+	TObjectPtr<UInputMappingContext> CrouchedMappingContext;
 
 	/* End MappingContexts */
 
@@ -80,6 +81,13 @@ protected:
 
 	/* For interaction input */
 	void BeginInteraction();
+	/* For mouse release - requests the interaction to end */
+	void RequestEndInteraction();
+	/**
+	* Maybe it is unneccessary for this to be part of the input action completed, 
+	* since the interactable object will broadcast when its interaction is finished,
+	* which will call this function anyway.
+	*/
 	void EndInteraction();
 
 	/* End Inputs */
@@ -102,5 +110,11 @@ private:
 	// The result of the ArmsLengthTrace(). Can be further evaluated
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess=true))
 	FHitResult ReachableTargetHitResult;
+
+	// Used to determing if a mouse click/release may cause an interaction to occur
+	bool bIsInteracting = false;
+
+	// Component this controller is currently interracting with - will be nullptr if no interaction
+	TObjectPtr<UInteractableComponent> CurrentInteractableComponent = nullptr;
 
 };

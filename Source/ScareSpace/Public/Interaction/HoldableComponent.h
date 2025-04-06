@@ -16,5 +16,11 @@ class SCARESPACE_API UHoldableComponent : public UInteractableComponent
 
 public:
 	UHoldableComponent();
+
+	// Called when interaction is set to begin
+	virtual void BeginInteraction() override;
+
+	// Called when interaction is set to end
+	virtual void EndInteraction() override;
 	
 };
