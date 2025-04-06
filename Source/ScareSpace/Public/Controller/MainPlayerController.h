@@ -103,9 +103,4 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess=true))
 	FHitResult ReachableTargetHitResult;
 
-	/**
-	* Returns true if the actor implements the Interactable interface
-	* @param Actor to test
-	*/
-	bool IsInteractable(const AActor* Actor);
 };

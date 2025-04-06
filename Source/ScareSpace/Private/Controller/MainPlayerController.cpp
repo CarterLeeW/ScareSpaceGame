@@ -74,10 +74,20 @@ void AMainPlayerController::UnCrouchImplementation()
 
 void AMainPlayerController::BeginInteraction()
 {
-	if (ReachableTargetHitResult.bBlockingHit && IsInteractable(ReachableTargetHitResult.GetActor()))
+	// No targets are in reach, so there can be no interaction
+	if (!ReachableTargetHitResult.bBlockingHit)
 	{
-		TScriptInterface Interactable = TScriptInterface<IInteractable>(ReachableTargetHitResult.GetActor());
-		Interactable.GetInterface()->GetInteractableComponent();
+		return;
+	}
+
+	// The actor has an interactable component
+	if (UInteractableComponent* InteractableComponent = ReachableTargetHitResult.GetActor()->GetComponentByClass<UInteractableComponent>())
+	{
+		UE_LOG(LogTemp, Display, TEXT("Interactable actor %s"), *ReachableTargetHitResult.GetActor()->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("No interactable actor"));
 	}
 }
 
@@ -119,6 +129,10 @@ void AMainPlayerController::SetupInputComponent()
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMainPlayerController::Look);
+
+		// Interaction
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AMainPlayerController::BeginInteraction);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &AMainPlayerController::EndInteraction);
 	}
 }
 
@@ -141,16 +155,4 @@ void AMainPlayerController::ArmsLengthTrace(FHitResult& OutResult)
 	//		return nullptr;
 	//	}
 	//}
-}
-
-bool AMainPlayerController::IsInteractable(const AActor* Actor)
-{
-	if (Actor->Implements<UInteractable>())
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
 }

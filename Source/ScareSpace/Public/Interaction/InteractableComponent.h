@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include "Interaction/Interactable.h"
 #include "InteractableComponent.generated.h"
 
 /* Label for the type of interactable component */
