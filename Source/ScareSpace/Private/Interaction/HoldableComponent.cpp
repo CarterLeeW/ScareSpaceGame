@@ -11,12 +11,13 @@ UHoldableComponent::UHoldableComponent()
 void UHoldableComponent::BeginInteraction()
 {
 	UE_LOG(LogTemp, Display, TEXT("Holdable component begin implementation"));
-	EndInteraction();
+	
 }
 
 void UHoldableComponent::EndInteraction()
 {
 	UE_LOG(LogTemp, Display, TEXT("Holdable component end implementation"));
-	InteractionEnded.Broadcast();
-	InteractionEnded.Clear();
+	// TODO: Delegate functionality is currently unnecessary
+	/*InteractionEnded.Broadcast();
+	InteractionEnded.Clear();*/
 }

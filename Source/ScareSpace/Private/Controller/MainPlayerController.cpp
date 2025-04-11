@@ -86,7 +86,8 @@ void AMainPlayerController::BeginInteraction()
 	{
 		bIsInteracting = true;
 		// The interactable object determines when the action is ended, which calls this controller's end function
-		CurrentInteractableComponent->InteractionEnded.AddUObject(this, &AMainPlayerController::EndInteraction);
+		// TODO: This delegate functionality is currently unnecessary
+		//CurrentInteractableComponent->InteractionEnded.AddUObject(this, &AMainPlayerController::EndInteraction);
 
 		CurrentInteractableComponent->BeginInteraction();
 	}
@@ -101,8 +102,16 @@ void AMainPlayerController::RequestEndInteraction()
 	// TODO: what if the interactable object becomes void before its InteractionEnded delegate is broadcast?
 	if (bIsInteracting)
 	{
+		// Will be null if the component has been destroyed i.e. a collectible
+		if (IsValid(CurrentInteractableComponent))
+		{
+			CurrentInteractableComponent->EndInteraction();
+		}
 		UE_LOG(LogTemp, Display, TEXT("End interaction reached from AMainPlayerController::RequestEndInteraction"));
+
+		// Interaction is now over for sure
 		bIsInteracting = false;
+		CurrentInteractableComponent = nullptr;
 	}
 }
 
