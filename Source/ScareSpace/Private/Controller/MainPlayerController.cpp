@@ -154,9 +154,6 @@ void AMainPlayerController::SetupInputComponent()
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMainPlayerController::Look);
 
-		// Interaction
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AMainPlayerController::BeginInteraction);
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &AMainPlayerController::RequestEndInteraction);
 	}
 }
 

@@ -53,10 +53,6 @@ public:
 protected:
 	/* Begin MappingContexts */
 
-	/** Input Mapping Context to be used for player input */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	TObjectPtr<UInputMappingContext> InputMappingContext;
-
 	/** Crouched MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputMappingContext> CrouchedMappingContext;
