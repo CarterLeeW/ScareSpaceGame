@@ -9,6 +9,7 @@
 class UInputMappingContext;
 class UInputAction;
 class UInteractableComponent;
+class UPhysicsHandleComponent;
 
 UCLASS( ClassGroup=(Interacting), meta=(BlueprintSpawnableComponent) )
 class SCARESPACE_API UInteractorComponent : public USceneComponent
@@ -20,6 +21,10 @@ public:
 	UInteractorComponent();
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	// Attributes
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float HandLength = 300.0;
 
 	// Mapping Context
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
@@ -55,4 +60,7 @@ private:
 
 	// Component this controller is currently interracting with - will be nullptr if no interaction
 	TObjectPtr<UInteractableComponent> CurrentInteractableComponent = nullptr;
+
+	// This owners PhysicsHandle
+	TObjectPtr<UPhysicsHandleComponent> PhysicsHandle;
 };
