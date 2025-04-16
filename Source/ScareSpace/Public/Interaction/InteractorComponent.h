@@ -23,8 +23,16 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	// Attributes
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float HandLength = 300.0;
+
+	/* Interaction */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction", meta = (ClampMin = "0.0"))
+	float HandLength = 300.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction", meta = (ClampMin = "0.0"))
+	float MaxHoldLength = 300.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction", meta = (ClampMin = "0.0"))
+	float MinHoldLength = 100.0f;
 
 	// Mapping Context
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
@@ -52,6 +60,13 @@ private:
 	* @param OutHit
 	*/
 	void ArmsLengthTrace(FHitResult& OutResult);
+
+	// Called when the interactable object is to be held
+	void BeginHolding();
+	// Called during ContinueInteraction to continue holding
+	void ContinueHolding();
+	// Current length object is being held at
+	float CurrentHeldLength = 0.0f;
 
 	// The result of the ArmsLengthTrace(). Can be further evaluated
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))

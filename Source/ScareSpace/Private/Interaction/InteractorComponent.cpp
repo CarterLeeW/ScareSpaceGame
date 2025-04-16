@@ -70,6 +70,17 @@ void UInteractorComponent::BeginInteraction()
 		CurrentInteractableComponent->BeginInteraction();
 
 		/* Code related to input mappings and type of interaction */
+		switch (CurrentInteractableComponent->InteractableType)
+		{
+		case EInteractableType::Holdable:
+			BeginHolding();
+			break;
+		case EInteractableType::Collectable:
+
+			break;
+		default:
+			UE_LOG(LogTemp, Warning, TEXT("EInteractableType cannot be found"));
+		}
 
 	}
 	else
@@ -100,10 +111,26 @@ void UInteractorComponent::RequestEndInteraction()
 
 void UInteractorComponent::ContinueInteraction()
 {
+	// We don't need to continue in this case
+	if (!bIsInteracting)
+	{
+		return;
+	}
 	/* Check what type of interaction it is,
 	* if holding, then do physics handle things,
 	* if pivoting, then .....
 	*/
+	switch (CurrentInteractableComponent->InteractableType)
+	{
+	case EInteractableType::Holdable:
+		ContinueHolding();
+		break;
+	case EInteractableType::Collectable:
+
+		break;
+	default:
+		UE_LOG(LogTemp, Warning, TEXT("EInteractableType cannot be found"));
+	}
 
 	UE_LOG(LogTemp, Display, TEXT("Continuing interaction"));
 }
@@ -127,4 +154,29 @@ void UInteractorComponent::ArmsLengthTrace(FHitResult& OutResult)
 	//		return nullptr;
 	//	}
 	//}
+}
+
+void UInteractorComponent::BeginHolding()
+{
+	UPrimitiveComponent* ComponentToHold = ReachableTargetHitResult.GetComponent();
+	ComponentToHold->SetSimulatePhysics(true);
+	ComponentToHold->WakeAllRigidBodies();
+	// --Uses actor's root component-- should this change??
+	CurrentHeldLength = FVector::Dist(GetComponentLocation(), ReachableTargetHitResult.ImpactPoint);
+	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * CurrentHeldLength);
+	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
+
+	// May need to change these parameters depending on the behavior
+	PhysicsHandle->GrabComponentAtLocationWithRotation(
+		ComponentToHold,
+		NAME_None,
+		ReachableTargetHitResult.ImpactPoint,
+		GetComponentRotation()
+	);
+}
+
+void UInteractorComponent::ContinueHolding()
+{
+	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * CurrentHeldLength);
+	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
 }
