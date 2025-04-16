@@ -39,10 +39,12 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	/* For interaction input */
+	/* For interaction input -Started- */
 	void BeginInteraction();
-	/* For mouse release - requests the interaction to end */
+	/* For mouse release - requests the interaction to end -Completed- */
 	void RequestEndInteraction();
+	/* Logic for continuing an interaction (hold, turn, etc.) -Triggered- */
+	void ContinueInteraction();
 
 private:
 	/**

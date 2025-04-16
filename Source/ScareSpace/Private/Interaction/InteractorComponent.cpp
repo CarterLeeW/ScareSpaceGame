@@ -24,6 +24,7 @@ void UInteractorComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	ArmsLengthTrace(ReachableTargetHitResult);
+
 }
 
 
@@ -43,6 +44,7 @@ void UInteractorComponent::BeginPlay()
 		// Interaction
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &UInteractorComponent::BeginInteraction);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &UInteractorComponent::RequestEndInteraction);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &UInteractorComponent::ContinueInteraction);
 	}
 
 	// Store physics handle for use in interactions
@@ -66,6 +68,9 @@ void UInteractorComponent::BeginInteraction()
 	{
 		bIsInteracting = true;
 		CurrentInteractableComponent->BeginInteraction();
+
+		/* Code related to input mappings and type of interaction */
+
 	}
 	else
 	{
@@ -84,11 +89,23 @@ void UInteractorComponent::RequestEndInteraction()
 			CurrentInteractableComponent->EndInteraction();
 		}
 		UE_LOG(LogTemp, Display, TEXT("End interaction reached from AMainPlayerController::RequestEndInteraction"));
-
 		// Interaction is now over for sure
-		bIsInteracting = false;
+
+		/* Code related to input mappings */
+
 		CurrentInteractableComponent = nullptr;
+		bIsInteracting = false;
 	}
+}
+
+void UInteractorComponent::ContinueInteraction()
+{
+	/* Check what type of interaction it is,
+	* if holding, then do physics handle things,
+	* if pivoting, then .....
+	*/
+
+	UE_LOG(LogTemp, Display, TEXT("Continuing interaction"));
 }
 
 void UInteractorComponent::ArmsLengthTrace(FHitResult& OutResult)
