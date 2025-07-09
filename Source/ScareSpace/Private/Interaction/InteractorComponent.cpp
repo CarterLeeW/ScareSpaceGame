@@ -32,13 +32,15 @@ void UInteractorComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	ACharacter* ThisChar = Cast<ACharacter>(GetOwner());
+	checkf(ThisChar, TEXT("InteractorComponent must be attached to a Character!"));
 	APlayerController* ThisController = Cast<APlayerController>(ThisChar->GetController());
+	checkf(ThisController, TEXT("InteractorComponent must be attached to a Character with a PlayerController!"));
+	// Bind Interactor input actions to the controller
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
 		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
 	{
 		Subsystem->AddMappingContext(InteractorMappingContext, 0);
 	}
-
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(ThisController->InputComponent))
 	{
 		// Interaction
@@ -159,6 +161,11 @@ void UInteractorComponent::ArmsLengthTrace(FHitResult& OutResult)
 void UInteractorComponent::BeginHolding()
 {
 	UPrimitiveComponent* ComponentToHold = ReachableTargetHitResult.GetComponent();
+	if (!IsValid(ComponentToHold))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Component to hold is not valid!"));
+		return;
+	}
 	ComponentToHold->SetSimulatePhysics(true);
 	ComponentToHold->WakeAllRigidBodies();
 	// --Uses actor's root component-- should this change??
