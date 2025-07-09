@@ -99,6 +99,15 @@ void UInteractorComponent::RequestEndInteraction()
 		// Will be null if the component has been destroyed i.e. a collectible
 		if (IsValid(CurrentInteractableComponent))
 		{
+			// If the object was holdable, release it from the physics handle.
+			if (CurrentInteractableComponent->InteractableType == EInteractableType::Holdable)
+			{
+				if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent())
+				{
+					PhysicsHandle->ReleaseComponent();
+				}
+			}
+			// End the interaction on the interactable component
 			CurrentInteractableComponent->EndInteraction();
 		}
 		UE_LOG(LogTemp, Display, TEXT("End interaction reached from AMainPlayerController::RequestEndInteraction"));
@@ -172,6 +181,11 @@ void UInteractorComponent::BeginHolding()
 	CurrentHeldLength = FVector::Dist(GetComponentLocation(), ReachableTargetHitResult.ImpactPoint);
 	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * CurrentHeldLength);
 	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
+
+	// NOTE: To avoid collision issues, the component and the character should not block each other.
+	// HOWERVER, they should overlap, so that you can only drop the object when you are not inside it.
+	// This can be done on the HoldableComponent itself
+	// TODO: When the object is dropped, it clips out of the character and may push the character around
 
 	// May need to change these parameters depending on the behavior
 	PhysicsHandle->GrabComponentAtLocationWithRotation(
