@@ -33,7 +33,7 @@ void UInteractorComponent::BeginPlay()
 	Super::BeginPlay();
 	ACharacter* ThisChar = Cast<ACharacter>(GetOwner());
 	checkf(ThisChar, TEXT("InteractorComponent must be attached to a Character!"));
-	APlayerController* ThisController = Cast<APlayerController>(ThisChar->GetController());
+	ThisController = Cast<APlayerController>(ThisChar->GetController());
 	checkf(ThisController, TEXT("InteractorComponent must be attached to a Character with a PlayerController!"));
 	// Bind Interactor input actions to the controller
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
@@ -102,6 +102,7 @@ void UInteractorComponent::RequestEndInteraction()
 			// If the object was holdable, release it from the physics handle.
 			if (CurrentInteractableComponent->InteractableType == EInteractableType::Holdable)
 			{
+				// If object has already been thrown, then this has already occurred
 				if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent())
 				{
 					PhysicsHandle->ReleaseComponent();
@@ -146,6 +147,46 @@ void UInteractorComponent::ContinueInteraction()
 	UE_LOG(LogTemp, Display, TEXT("Continuing interaction"));
 }
 
+void UInteractorComponent::ThrowObject()
+{
+	if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent())
+	{
+		// Get the component to throw
+		UPrimitiveComponent* ComponentToThrow = PhysicsHandle->GetGrabbedComponent();
+		if (!IsValid(ComponentToThrow))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Component to throw is not valid!"));
+			return;
+		}
+		// Set the component to simulate physics and wake it up
+		ComponentToThrow->SetSimulatePhysics(true);
+		ComponentToThrow->WakeAllRigidBodies();
+		// Calculate the throw velocity based on the current held length and forward vector
+		// Add a slight vertical increase to the throw angle
+		FVector Forward = GetForwardVector();
+		FVector Up = FVector::UpVector;
+		float VerticalBoost = 0.2f; // Adjust this value for more/less vertical boost
+		FVector ThrowDirection = (Forward + Up * VerticalBoost).GetSafeNormal();
+
+		FVector ThrowVelocity = ThrowDirection * CurrentHeldLength * ThrowForceMultiplier;
+		ComponentToThrow->AddImpulse(ThrowVelocity, NAME_None, true);
+
+		PhysicsHandle->ReleaseComponent();
+		RequestEndInteraction();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No component is currently being held!"));
+	}
+	// Remove the holding mapping context
+	checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
+	{
+		Subsystem->RemoveMappingContext(HoldingMappingContext);
+	}
+}
+
 void UInteractorComponent::ArmsLengthTrace(FHitResult& OutResult)
 {
 	FVector TraceStart = GetComponentLocation();
@@ -181,6 +222,18 @@ void UInteractorComponent::BeginHolding()
 	CurrentHeldLength = FVector::Dist(GetComponentLocation(), ReachableTargetHitResult.ImpactPoint);
 	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * CurrentHeldLength);
 	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
+
+	// Give player the holding controls mapping context
+	checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(HoldingMappingContext, 0);
+	}
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(ThisController->InputComponent))
+	{
+		EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &UInteractorComponent::ThrowObject);
+	}
 
 	// NOTE: To avoid collision issues, the component and the character should not block each other.
 	// HOWERVER, they should overlap, so that you can only drop the object when you are not inside it.

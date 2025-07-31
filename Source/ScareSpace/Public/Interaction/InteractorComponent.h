@@ -34,14 +34,30 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction", meta = (ClampMin = "0.0"))
 	float MinHoldLength = 100.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction", meta = (ClampMin = "0.0"))
+	float ThrowForceMultiplier = 10.0f;
+
 	// Mapping Context
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> InteractorMappingContext;
 
+	// Holding Context
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputMappingContext> HoldingMappingContext;
+
+	/* Begin input actions */
 	/* Interaction Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputAction> InteractAction;
+
+	/* Throw Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UInputAction> ThrowAction;
+
 	/* End input actions */
+
+	// The controller that owns this interactor component
+	TObjectPtr<APlayerController> ThisController;
 
 protected:
 	// Called when the game starts
@@ -53,6 +69,8 @@ protected:
 	void RequestEndInteraction();
 	/* Logic for continuing an interaction (hold, turn, etc.) -Triggered- */
 	void ContinueInteraction();
+	/* For throwing objects that are being held */
+	void ThrowObject();
 
 private:
 	/**
