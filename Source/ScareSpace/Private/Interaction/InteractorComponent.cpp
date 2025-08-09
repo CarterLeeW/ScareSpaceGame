@@ -250,6 +250,27 @@ void UInteractorComponent::BeginHolding()
 
 void UInteractorComponent::ContinueHolding()
 {
+	// TODO: This does not work as intended at all
+	FVector ComponentLocation = FVector::ZeroVector;
+	FRotator ComponentRotation = FRotator::ZeroRotator;
+	PhysicsHandle->GetTargetLocationAndRotation(ComponentLocation, ComponentRotation);
+	CurrentHeldLength = FVector::Dist(GetComponentLocation(), ComponentLocation);
+	UE_LOG(LogTemp, Display, TEXT("before edit: %f"), CurrentHeldLength);
+	// Observe minimum and maximum hold distances
+	if (CurrentHeldLength < MinHoldLength)
+	{
+		CurrentHeldLength = MinHoldLength;
+	}
+	else if (CurrentHeldLength > HoldAutoDropDistance)
+	{
+		RequestEndInteraction();
+		return;
+	}
+	else if (CurrentHeldLength > MaxHoldLength)
+	{
+		CurrentHeldLength = MaxHoldLength;
+	}
+	UE_LOG(LogTemp, Display, TEXT("after edit: %f"), CurrentHeldLength);
 	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * CurrentHeldLength);
 	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
 }
