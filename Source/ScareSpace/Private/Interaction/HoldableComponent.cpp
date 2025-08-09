@@ -11,7 +11,6 @@ UHoldableComponent::UHoldableComponent()
 
 void UHoldableComponent::BeginInteraction()
 {
-	UE_LOG(LogTemp, Display, TEXT("Holdable component begin implementation"));
 	// Disable blocking collision with pawns so that the player can walk through the object and not stand on it etc.
 	if (UStaticMeshComponent* Mesh = GetOwner()->GetComponentByClass<UStaticMeshComponent>())
 	{
@@ -21,7 +20,13 @@ void UHoldableComponent::BeginInteraction()
 
 void UHoldableComponent::EndInteraction()
 {
-	UE_LOG(LogTemp, Display, TEXT("Holdable component end implementation"));
+	if (AActor* Owner = GetOwner())
+	{
+		// not reliable, does not show the items velocity after the impulse is applied
+		FVector Velocity = Owner->GetVelocity();
+		UE_LOG(LogTemp, Display, TEXT("object velocity: %s"), *Velocity.ToString());
+	}
+	
 	// Re-enable blocking collision with pawns
 	if (UStaticMeshComponent* Mesh = GetOwner()->GetComponentByClass<UStaticMeshComponent>())
 	{

@@ -47,6 +47,7 @@ void UInteractorComponent::BeginPlay()
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &UInteractorComponent::BeginInteraction);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &UInteractorComponent::RequestEndInteraction);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &UInteractorComponent::ContinueInteraction);
+		EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &UInteractorComponent::ThrowObject);
 	}
 
 	// Store physics handle for use in interactions
@@ -105,19 +106,28 @@ void UInteractorComponent::RequestEndInteraction()
 				// If object has already been thrown, then this has already occurred
 				if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent())
 				{
+					UE_LOG(LogTemp, Display, TEXT("object dropped without throwing"));
 					PhysicsHandle->ReleaseComponent();
 				}
 			}
+			// Check the object's velocity so you can't shoot it to the moon
+			FVector PlayerVelocity = GetOwner()->GetVelocity();
 			// End the interaction on the interactable component
 			CurrentInteractableComponent->EndInteraction();
 		}
-		UE_LOG(LogTemp, Display, TEXT("End interaction reached from AMainPlayerController::RequestEndInteraction"));
+		// UE_LOG(LogTemp, Display, TEXT("End interaction reached from AMainPlayerController::RequestEndInteraction"));
 		// Interaction is now over for sure
 
 		/* Code related to input mappings */
 
 		CurrentInteractableComponent = nullptr;
 		bIsInteracting = false;
+	}
+	// Remove the holding mapping context
+	checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
+	{
+		Subsystem->RemoveMappingContext(HoldingMappingContext);
 	}
 }
 
@@ -144,7 +154,7 @@ void UInteractorComponent::ContinueInteraction()
 		UE_LOG(LogTemp, Warning, TEXT("EInteractableType cannot be found"));
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("Continuing interaction"));
+	//UE_LOG(LogTemp, Display, TEXT("Continuing interaction"));
 }
 
 void UInteractorComponent::ThrowObject()
@@ -177,13 +187,6 @@ void UInteractorComponent::ThrowObject()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No component is currently being held!"));
-	}
-	// Remove the holding mapping context
-	checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
-		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
-	{
-		Subsystem->RemoveMappingContext(HoldingMappingContext);
 	}
 }
 
@@ -225,15 +228,11 @@ void UInteractorComponent::BeginHolding()
 
 	// Give player the holding controls mapping context
 	checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
-		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
 	{
-		Subsystem->AddMappingContext(HoldingMappingContext, 0);
+		Subsystem->AddMappingContext(HoldingMappingContext, 1);
 	}
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(ThisController->InputComponent))
-	{
-		EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &UInteractorComponent::ThrowObject);
-	}
+	
 
 	// NOTE: To avoid collision issues, the component and the character should not block each other.
 	// HOWERVER, they should overlap, so that you can only drop the object when you are not inside it.
