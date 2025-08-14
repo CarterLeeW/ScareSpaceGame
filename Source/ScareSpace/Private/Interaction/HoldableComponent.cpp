@@ -11,6 +11,7 @@ UHoldableComponent::UHoldableComponent()
 
 void UHoldableComponent::BeginInteraction()
 {
+	bIsBeingHeld = true;
 	// Disable blocking collision with pawns so that the player can walk through the object and not stand on it etc.
 	if (UStaticMeshComponent* Mesh = GetOwner()->GetComponentByClass<UStaticMeshComponent>())
 	{
@@ -20,6 +21,7 @@ void UHoldableComponent::BeginInteraction()
 
 void UHoldableComponent::EndInteraction()
 {
+	bIsBeingHeld = false;
 	if (AActor* Owner = GetOwner())
 	{
 		// not reliable, does not show the items velocity after the impulse is applied
@@ -35,4 +37,11 @@ void UHoldableComponent::EndInteraction()
 	// TODO: Delegate functionality is currently unnecessary
 	/*InteractionEnded.Broadcast();
 	InteractionEnded.Clear();*/
+}
+
+void UHoldableComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	
 }

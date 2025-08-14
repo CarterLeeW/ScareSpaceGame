@@ -26,16 +26,16 @@ public:
 
 	/* Interaction */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction", meta = (ClampMin = "0.0"))
-	float HandLength = 300.0f;
+	float HandLength = 250.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction", meta = (ClampMin = "0.0"))
-	float HoldAutoDropDistance = 350.0f;
+	float HoldAutoDropDistance = 300.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction", meta = (ClampMin = "0.0"))
-	float MaxHoldLength = 300.0f;
+	float MaxHoldLength = 200.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction", meta = (ClampMin = "0.0"))
-	float MinHoldLength = 100.0f;
+	float MinHoldLength = 50.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction", meta = (ClampMin = "0.0"))
 	float ThrowForceMultiplier = 10.0f;
@@ -87,7 +87,7 @@ private:
 	// Called during ContinueInteraction to continue holding
 	void ContinueHolding();
 	// Current length object is being held at
-	float CurrentHeldLength = 0.0f;
+	float TargetHoldLength = 0.0f;
 
 	// The result of the ArmsLengthTrace(). Can be further evaluated
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))

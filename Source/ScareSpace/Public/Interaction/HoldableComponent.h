@@ -22,5 +22,18 @@ public:
 
 	// Called when interaction is set to end
 	virtual void EndInteraction() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
+	bool bIsBreakable = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
+	float BreakForce = 1000.0f;
+
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	// Cannot break when being held
+	bool bIsBeingHeld = false;
 	
 };

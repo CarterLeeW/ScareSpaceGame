@@ -178,7 +178,7 @@ void UInteractorComponent::ThrowObject()
 		float VerticalBoost = 0.2f; // Adjust this value for more/less vertical boost
 		FVector ThrowDirection = (Forward + Up * VerticalBoost).GetSafeNormal();
 
-		FVector ThrowVelocity = ThrowDirection * CurrentHeldLength * ThrowForceMultiplier;
+		FVector ThrowVelocity = ThrowDirection * TargetHoldLength * ThrowForceMultiplier;
 		ComponentToThrow->AddImpulse(ThrowVelocity, NAME_None, true);
 
 		PhysicsHandle->ReleaseComponent();
@@ -222,8 +222,8 @@ void UInteractorComponent::BeginHolding()
 	ComponentToHold->SetSimulatePhysics(true);
 	ComponentToHold->WakeAllRigidBodies();
 	// --Uses actor's root component-- should this change??
-	CurrentHeldLength = FVector::Dist(GetComponentLocation(), ReachableTargetHitResult.ImpactPoint);
-	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * CurrentHeldLength);
+	TargetHoldLength = FVector::Dist(GetComponentLocation(), ReachableTargetHitResult.ImpactPoint);
+	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * TargetHoldLength);
 	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
 
 	// Give player the holding controls mapping context
@@ -237,7 +237,7 @@ void UInteractorComponent::BeginHolding()
 	// NOTE: To avoid collision issues, the component and the character should not block each other.
 	// HOWERVER, they should overlap, so that you can only drop the object when you are not inside it.
 	// This can be done on the HoldableComponent itself
-	// TODO: When the object is dropped, it clips out of the character and may push the character around
+	// TODO: When the object is dropped, it clips out of the character and may push the character around, but it is not smooth
 
 	// May need to change these parameters depending on the behavior
 	PhysicsHandle->GrabComponentAtLocationWithRotation(
@@ -248,29 +248,23 @@ void UInteractorComponent::BeginHolding()
 	);
 }
 
+/**
+ * This will be called every frame while the object is being held, so be careful with performance.
+ */
 void UInteractorComponent::ContinueHolding()
 {
-	// TODO: This does not work as intended at all
-	FVector ComponentLocation = FVector::ZeroVector;
-	FRotator ComponentRotation = FRotator::ZeroRotator;
-	PhysicsHandle->GetTargetLocationAndRotation(ComponentLocation, ComponentRotation);
-	CurrentHeldLength = FVector::Dist(GetComponentLocation(), ComponentLocation);
-	UE_LOG(LogTemp, Display, TEXT("before edit: %f"), CurrentHeldLength);
-	// Observe minimum and maximum hold distances
-	if (CurrentHeldLength < MinHoldLength)
+	// If the distance between the player and the held object is greater than the HoldAutoDropDistance, then drop it
+	if (CurrentInteractableComponent)
 	{
-		CurrentHeldLength = MinHoldLength;
+		float CurrentHeldLength = FVector::Dist(GetComponentLocation(), CurrentInteractableComponent->GetOwner()->GetActorLocation());
+		UE_LOG(LogTemp, Display, TEXT("current held length: %f"), CurrentHeldLength);
+		if (CurrentHeldLength > HoldAutoDropDistance)
+		{
+			RequestEndInteraction();
+			return;
+		}
 	}
-	else if (CurrentHeldLength > HoldAutoDropDistance)
-	{
-		RequestEndInteraction();
-		return;
-	}
-	else if (CurrentHeldLength > MaxHoldLength)
-	{
-		CurrentHeldLength = MaxHoldLength;
-	}
-	UE_LOG(LogTemp, Display, TEXT("after edit: %f"), CurrentHeldLength);
-	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * CurrentHeldLength);
+	UE_LOG(LogTemp, Display, TEXT("target hold length: %f"), TargetHoldLength);
+	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * TargetHoldLength);
 	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
 }
