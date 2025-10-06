@@ -43,5 +43,21 @@ void UHoldableComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+	// Bind OnComponentHit
+	if (UStaticMeshComponent* Mesh = GetOwner()->GetComponentByClass<UStaticMeshComponent>())
+	{
+		Mesh->OnComponentHit.AddDynamic(this, &UHoldableComponent::OnMeshComponentHit);
+	}
+}
+
+void UHoldableComponent::OnMeshComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	// Example: Log the hit event
+	UE_LOG(LogTemp, Display, TEXT("HoldableComponent was hit by %s"), *GetNameSafe(OtherActor));
+	if (bIsBreakable && (NormalImpulse.Length() > BreakForce))
+	{
+		// breaks
+		// TODO: Breakable needs to be its own component using chaos physics
+
+	}
 }

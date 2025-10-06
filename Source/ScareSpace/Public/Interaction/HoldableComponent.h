@@ -29,8 +29,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
 	float BreakForce = 1000.0f;
 
+
+
 protected:
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void OnMeshComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
 	// Cannot break when being held

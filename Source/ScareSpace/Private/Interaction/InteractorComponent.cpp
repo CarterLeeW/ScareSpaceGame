@@ -257,14 +257,14 @@ void UInteractorComponent::ContinueHolding()
 	if (CurrentInteractableComponent)
 	{
 		float CurrentHeldLength = FVector::Dist(GetComponentLocation(), CurrentInteractableComponent->GetOwner()->GetActorLocation());
-		UE_LOG(LogTemp, Display, TEXT("current held length: %f"), CurrentHeldLength);
+		// UE_LOG(LogTemp, Display, TEXT("current held length: %f"), CurrentHeldLength);
 		if (CurrentHeldLength > HoldAutoDropDistance)
 		{
 			RequestEndInteraction();
 			return;
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("target hold length: %f"), TargetHoldLength);
+	// UE_LOG(LogTemp, Display, TEXT("target hold length: %f"), TargetHoldLength);
 	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * TargetHoldLength);
 	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
 }
