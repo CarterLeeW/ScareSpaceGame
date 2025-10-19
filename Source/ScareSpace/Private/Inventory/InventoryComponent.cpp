@@ -2,33 +2,38 @@
 
 
 #include "Inventory/InventoryComponent.h"
-
-// Sets default values for this component's properties
+#include "GameFramework/Character.h"
+#include "GameFramework/PlayerController.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 UInventoryComponent::UInventoryComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 
-// Called when the game starts
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	ACharacter* ThisChar = Cast<ACharacter>(GetOwner());
+	checkf(ThisChar, TEXT("InventoryComponent must be attached to a Character!"));
+	ThisController = Cast<APlayerController>(ThisChar->GetController());
+	checkf(ThisController, TEXT("InventoryComponent must be attached to a Character with a PlayerController!"));
+	// Bind Interactor input actions to the controller
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(InventoryGameplayContext, 0);
+	}
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(ThisController->InputComponent))
+	{
+		// Interaction
+		EnhancedInputComponent->BindAction(OpenInventoryMenuAction, ETriggerEvent::Started, this, &UInventoryComponent::OpenInventoryMenu);
+	}
 
-	// ...
-	
 }
 
-
-// Called every frame
-void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UInventoryComponent::OpenInventoryMenu()
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
+	UE_LOG(LogTemp, Display, TEXT("Open Inventory"));
 }
-

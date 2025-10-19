@@ -6,6 +6,17 @@
 #include "Engine/DataTable.h" 
 #include "ItemStructs.generated.h"
 
+// insert enum for the type of item:
+// e.g. consumable, useable
+// maybe this could just be bools?
+
+UENUM(BlueprintType)
+enum class EActivationType: uint8
+{
+	Consumable,    // e.g. healing item
+	Usable         // e.g. door key
+};
+
 /**
  * 
  */
@@ -26,6 +37,12 @@ struct FItemData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties")
 	bool bIsStackable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties")
+	bool bIsKeyItem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties")
+	bool bIsCraftable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties")
 	int32 MaxStackSize;

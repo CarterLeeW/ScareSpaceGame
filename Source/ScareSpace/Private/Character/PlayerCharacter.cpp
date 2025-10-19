@@ -13,6 +13,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interaction/InteractorComponent.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Inventory/InventoryComponent.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -41,6 +42,9 @@ APlayerCharacter::APlayerCharacter()
 
 	// Physics Handle Component
 	PhysicsHandleComponent = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandleComponent"));
+
+	// Inventory Component
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 }
 
 // Called when the game starts or when spawned

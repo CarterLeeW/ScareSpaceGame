@@ -14,6 +14,7 @@ class UInputMappingContext;
 class UInteractorComponent;
 class UPhysicsHandleComponent;
 struct FInputActionValue;
+class UInventoryComponent;
 
 UCLASS()
 class SCARESPACE_API APlayerCharacter : public ACharacter
@@ -32,6 +33,8 @@ public:
 	UInteractorComponent* GetInteractorComponent() const { return InteractorComponent; }
 	// Returns PhysicsHandleComponent
 	UPhysicsHandleComponent* GetPhysicsHandleComponent() const { return PhysicsHandleComponent; }
+	// Returns InventoryComponent
+	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 
 protected:
 	// Called when the game starts or when spawned
@@ -52,5 +55,9 @@ protected:
 	// Physics Hanlde
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Physics")
 	TObjectPtr<UPhysicsHandleComponent> PhysicsHandleComponent;
+
+	// Inventory Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
+	TObjectPtr<UInventoryComponent> InventoryComponent;
 
 };
