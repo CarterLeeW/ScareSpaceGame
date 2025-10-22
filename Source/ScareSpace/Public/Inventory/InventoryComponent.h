@@ -50,4 +50,11 @@ protected:
 	virtual void BeginPlay() override;
 
 	void OpenInventoryMenu();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
+	TSet<FName> InventoryItems;
+
+	//This is the main database of all items.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	TObjectPtr<UDataTable> ItemDatabase;
 };
