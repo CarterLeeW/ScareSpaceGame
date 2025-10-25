@@ -43,13 +43,20 @@ public:
 
 	/* End Input */
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool AddItemToInventory(FName ItemName);
+
 	// The controller that owns this interactor component
 	TObjectPtr<APlayerController> ThisController;
 
 protected:
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void OpenInventoryMenu();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void CloseInventoryMenu();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TSet<FName> InventoryItems;
@@ -57,4 +64,7 @@ protected:
 	//This is the main database of all items.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	TObjectPtr<UDataTable> ItemDatabase;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
+	bool bIsInventoryOpen = false;
 };

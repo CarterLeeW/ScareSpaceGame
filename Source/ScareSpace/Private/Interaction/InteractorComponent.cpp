@@ -8,6 +8,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Interaction/InteractableComponent.h"
+#include "Logging/ScareSpaceLogs.h"
 
 UInteractorComponent::UInteractorComponent()
 {
@@ -31,10 +32,12 @@ void UInteractorComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 void UInteractorComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
 	ACharacter* ThisChar = Cast<ACharacter>(GetOwner());
 	checkf(ThisChar, TEXT("InteractorComponent must be attached to a Character!"));
 	ThisController = Cast<APlayerController>(ThisChar->GetController());
 	checkf(ThisController, TEXT("InteractorComponent must be attached to a Character with a PlayerController!"));
+
 	// Bind Interactor input actions to the controller
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
 		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
@@ -82,13 +85,13 @@ void UInteractorComponent::BeginInteraction()
 
 			break;
 		default:
-			UE_LOG(LogTemp, Warning, TEXT("EInteractableType cannot be found"));
+			UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be found"));
 		}
 
 	}
 	else
 	{
-		UE_LOG(LogTemp, Display, TEXT("No interactable actor"));
+		UE_LOG(LogInteraction, Display, TEXT("No interactable actor"));
 	}
 }
 
@@ -106,7 +109,7 @@ void UInteractorComponent::RequestEndInteraction()
 				// If object has already been thrown, then this has already occurred
 				if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent())
 				{
-					UE_LOG(LogTemp, Display, TEXT("object dropped without throwing"));
+					UE_LOG(LogInteraction, Display, TEXT("object dropped without throwing"));
 					PhysicsHandle->ReleaseComponent();
 				}
 			}
@@ -115,7 +118,7 @@ void UInteractorComponent::RequestEndInteraction()
 			// End the interaction on the interactable component
 			CurrentInteractableComponent->EndInteraction();
 		}
-		// UE_LOG(LogTemp, Display, TEXT("End interaction reached from AMainPlayerController::RequestEndInteraction"));
+		// UE_LOG(LogInteraction, Display, TEXT("End interaction reached from AMainPlayerController::RequestEndInteraction"));
 		// Interaction is now over for sure
 
 		/* Code related to input mappings */
@@ -151,10 +154,10 @@ void UInteractorComponent::ContinueInteraction()
 
 		break;
 	default:
-		UE_LOG(LogTemp, Warning, TEXT("EInteractableType cannot be found"));
+		UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be found"));
 	}
 
-	//UE_LOG(LogTemp, Display, TEXT("Continuing interaction"));
+	//UE_LOG(LogInteraction, Display, TEXT("Continuing interaction"));
 }
 
 void UInteractorComponent::ThrowObject()
@@ -165,7 +168,7 @@ void UInteractorComponent::ThrowObject()
 		UPrimitiveComponent* ComponentToThrow = PhysicsHandle->GetGrabbedComponent();
 		if (!IsValid(ComponentToThrow))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Component to throw is not valid!"));
+			UE_LOG(LogInteraction, Warning, TEXT("Component to throw is not valid!"));
 			return;
 		}
 		// Set the component to simulate physics and wake it up
@@ -186,7 +189,7 @@ void UInteractorComponent::ThrowObject()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No component is currently being held!"));
+		UE_LOG(LogInteraction, Warning, TEXT("No component is currently being held!"));
 	}
 }
 
@@ -216,7 +219,7 @@ void UInteractorComponent::BeginHolding()
 	UPrimitiveComponent* ComponentToHold = ReachableTargetHitResult.GetComponent();
 	if (!IsValid(ComponentToHold))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Component to hold is not valid!"));
+		UE_LOG(LogInteraction, Warning, TEXT("Component to hold is not valid!"));
 		return;
 	}
 	ComponentToHold->SetSimulatePhysics(true);
@@ -257,14 +260,14 @@ void UInteractorComponent::ContinueHolding()
 	if (CurrentInteractableComponent)
 	{
 		float CurrentHeldLength = FVector::Dist(GetComponentLocation(), CurrentInteractableComponent->GetOwner()->GetActorLocation());
-		// UE_LOG(LogTemp, Display, TEXT("current held length: %f"), CurrentHeldLength);
+		// UE_LOG(LogInteraction, Display, TEXT("current held length: %f"), CurrentHeldLength);
 		if (CurrentHeldLength > HoldAutoDropDistance)
 		{
 			RequestEndInteraction();
 			return;
 		}
 	}
-	// UE_LOG(LogTemp, Display, TEXT("target hold length: %f"), TargetHoldLength);
+	// UE_LOG(LogInteraction, Display, TEXT("target hold length: %f"), TargetHoldLength);
 	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * TargetHoldLength);
 	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
 }

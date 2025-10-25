@@ -3,6 +3,7 @@
 
 #include "Interaction/HoldableComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Logging/ScareSpaceLogs.h"
 
 UHoldableComponent::UHoldableComponent()
 {
@@ -26,7 +27,7 @@ void UHoldableComponent::EndInteraction()
 	{
 		// not reliable, does not show the items velocity after the impulse is applied
 		FVector Velocity = Owner->GetVelocity();
-		UE_LOG(LogTemp, Display, TEXT("object velocity: %s"), *Velocity.ToString());
+		UE_LOG(LogInteraction, Display, TEXT("object velocity: %s"), *Velocity.ToString());
 	}
 	
 	// Re-enable blocking collision with pawns
@@ -53,7 +54,7 @@ void UHoldableComponent::BeginPlay()
 void UHoldableComponent::OnMeshComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	// Example: Log the hit event
-	UE_LOG(LogTemp, Display, TEXT("HoldableComponent was hit by %s"), *GetNameSafe(OtherActor));
+	//UE_LOG(LogInteraction, Display, TEXT("HoldableComponent was hit by %s"), *GetNameSafe(OtherActor));
 	if (bIsBreakable && (NormalImpulse.Length() > BreakForce))
 	{
 		// breaks

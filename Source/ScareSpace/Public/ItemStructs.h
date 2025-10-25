@@ -20,7 +20,7 @@ struct FItemData : public FTableRowBase
 
 	// 1. Unique ID for easy lookups in C++ (can be used to track the item's identity)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Identity")
-	FText ItemPrintName;
+	FText ItemDisplayName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Identity")
 	FText ItemDescription;
