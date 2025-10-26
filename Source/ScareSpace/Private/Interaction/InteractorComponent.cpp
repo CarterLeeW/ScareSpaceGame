@@ -82,10 +82,10 @@ void UInteractorComponent::BeginInteraction()
 			BeginHolding();
 			break;
 		case EInteractableType::Collectable:
-
+			Collect(); // if mouse is held down, it continues to ask for interaction
 			break;
 		default:
-			UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be found"));
+			UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be found on %s"), *CurrentInteractableComponent->GetOwner()->GetName());
 		}
 
 	}
@@ -150,11 +150,8 @@ void UInteractorComponent::ContinueInteraction()
 	case EInteractableType::Holdable:
 		ContinueHolding();
 		break;
-	case EInteractableType::Collectable:
-
-		break;
 	default:
-		UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be found"));
+		UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be found on %s"), *CurrentInteractableComponent->GetOwner()->GetName());
 	}
 
 	//UE_LOG(LogInteraction, Display, TEXT("Continuing interaction"));
@@ -270,4 +267,9 @@ void UInteractorComponent::ContinueHolding()
 	// UE_LOG(LogInteraction, Display, TEXT("target hold length: %f"), TargetHoldLength);
 	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * TargetHoldLength);
 	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
+}
+
+void UInteractorComponent::Collect()
+{
+	UE_LOG(LogInteraction, Display, TEXT("Begin collecting"));
 }

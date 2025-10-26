@@ -89,6 +89,9 @@ private:
 	// Current length object is being held at
 	float TargetHoldLength = 0.0f;
 
+	// Called when interacting with a collectable item
+	void Collect();
+
 	// The result of the ArmsLengthTrace(). Can be further evaluated
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	FHitResult ReachableTargetHitResult;

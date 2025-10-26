@@ -30,11 +30,11 @@ bool UInventoryComponent::AddItemToInventory(FName ItemName)
 				UE_LOG(LogInventory, Display, TEXT("Adding %s to inventory"), *ItemName.ToString());
 				return true;
 			}
-			UE_LOG(LogInventory, Error, TEXT("%s is already in the player's inventory"), *ItemName.ToString());
+			UE_LOG(LogInventory, Warning, TEXT("%s is already in the player's inventory"), *ItemName.ToString());
 		}
-		UE_LOG(LogInventory, Error, TEXT("Item name: %s does not exist in the database"), *ItemName.ToString());
+		UE_LOG(LogInventory, Warning, TEXT("Item name: %s does not exist in the database"), *ItemName.ToString());
 	}
-	UE_LOG(LogInventory, Error, TEXT("Item database is not found on the Inventory Component"));
+	UE_LOG(LogInventory, Warning, TEXT("Item database is not found on the Inventory Component"));
 	return false;
 }
 
