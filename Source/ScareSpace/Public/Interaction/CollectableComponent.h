@@ -16,5 +16,8 @@ class SCARESPACE_API UCollectableComponent : public UInteractableComponent
 
 public:
 	UCollectableComponent();
+
+	// Called when interaction is set to begin
+	virtual void BeginInteraction() override;
 	
 };

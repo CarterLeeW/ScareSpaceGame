@@ -73,7 +73,6 @@ void UInteractorComponent::BeginInteraction()
 	if (IsValid(CurrentInteractableComponent))
 	{
 		bIsInteracting = true;
-		CurrentInteractableComponent->BeginInteraction();
 
 		/* Code related to input mappings and type of interaction */
 		switch (CurrentInteractableComponent->InteractableType)
@@ -87,6 +86,8 @@ void UInteractorComponent::BeginInteraction()
 		default:
 			UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be found on %s"), *CurrentInteractableComponent->GetOwner()->GetName());
 		}
+		// Start the interaction on the interactable component - will have different behavior depending on type
+		CurrentInteractableComponent->BeginInteraction();
 
 	}
 	else
@@ -272,4 +273,5 @@ void UInteractorComponent::ContinueHolding()
 void UInteractorComponent::Collect()
 {
 	UE_LOG(LogInteraction, Display, TEXT("Begin collecting"));
+	bIsInteracting = false;
 }
