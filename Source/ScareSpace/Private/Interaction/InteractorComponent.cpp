@@ -9,6 +9,7 @@
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Interaction/InteractableComponent.h"
 #include "Logging/ScareSpaceLogs.h"
+#include "Inventory/InventoryComponent.h"
 
 UInteractorComponent::UInteractorComponent()
 {
@@ -33,9 +34,9 @@ void UInteractorComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ACharacter* ThisChar = Cast<ACharacter>(GetOwner());
-	checkf(ThisChar, TEXT("InteractorComponent must be attached to a Character!"));
-	ThisController = Cast<APlayerController>(ThisChar->GetController());
+	ThisCharacter = Cast<ACharacter>(GetOwner());
+	checkf(ThisCharacter, TEXT("InteractorComponent must be attached to a Character!"));
+	ThisController = Cast<APlayerController>(ThisCharacter->GetController());
 	checkf(ThisController, TEXT("InteractorComponent must be attached to a Character with a PlayerController!"));
 
 	// Bind Interactor input actions to the controller
@@ -272,6 +273,24 @@ void UInteractorComponent::ContinueHolding()
 
 void UInteractorComponent::Collect()
 {
-	UE_LOG(LogInteraction, Display, TEXT("Begin collecting"));
+	UE_LOG(LogInteraction, Display, TEXT("Begin collecting, needs to interact with inventory component"));
+	// Get inventory component from the owner
+	if (ThisCharacter = Cast<ACharacter>(GetOwner()))
+	{
+		UInventoryComponent* InventoryComp = ThisCharacter->FindComponentByClass<UInventoryComponent>();
+		if (IsValid(InventoryComp))
+		{
+			// Get name of item from the collectible component
+			InventoryComp->AddItemToInventory(CurrentInteractableComponent->GetItemName());
+		}
+		else
+		{
+			UE_LOG(LogInteraction, Warning, TEXT("No InventoryComponent found on %s"), *ThisCharacter->GetName());
+		}
+	}
+	else
+	{
+		UE_LOG(LogInteraction, Warning, TEXT("Owner is not a character!"));
+	}
 	bIsInteracting = false;
 }

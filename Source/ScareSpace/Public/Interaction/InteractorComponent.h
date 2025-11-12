@@ -62,6 +62,9 @@ public:
 	// The controller that owns this interactor component
 	TObjectPtr<APlayerController> ThisController;
 
+	// The character that owns this interactor component
+	TObjectPtr<ACharacter> ThisCharacter;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

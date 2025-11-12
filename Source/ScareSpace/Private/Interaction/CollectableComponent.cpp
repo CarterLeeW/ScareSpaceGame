@@ -12,7 +12,7 @@ UCollectableComponent::UCollectableComponent()
 void UCollectableComponent::BeginInteraction()
 {
 	// Just test code
-	UE_LOG(LogInteraction, Display, TEXT("Collectable interacted with, needs to interact with inventory"));
+	UE_LOG(LogInteraction, Display, TEXT("Collectable interacted with"));
 	// For a collectable, we just destroy the owner actor
 	AActor* OwnerActor = GetOwner();
 	if (IsValid(OwnerActor))
