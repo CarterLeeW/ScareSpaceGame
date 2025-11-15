@@ -28,6 +28,11 @@ bool UInventoryComponent::AddItemToInventory(FName ItemName)
 			{
 				InventoryItems.Add(ItemName);
 				UE_LOG(LogInventory, Display, TEXT("Adding %s to inventory"), *ItemName.ToString());
+				// List inventory items for debugging
+				for (const FName& InventoryItem : InventoryItems)
+				{
+					UE_LOG(LogInventory, Display, TEXT("Current Inventory Item: %s"), *InventoryItem.ToString());
+				}
 				return true;
 			}
 			UE_LOG(LogInventory, Warning, TEXT("%s is already in the player's inventory"), *ItemName.ToString());

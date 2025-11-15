@@ -19,5 +19,14 @@ public:
 
 	// Called when interaction is set to begin
 	virtual void BeginInteraction() override;
+
+
+	UFUNCTION(BlueprintPure)
+	FName GetItemName() const { return ItemName; }
+
+private:
+	// Name of the item - used for lookup
+	UPROPERTY(EditDefaultsOnly, Category = "Collectable")
+	FName ItemName;
 	
 };

@@ -10,6 +10,7 @@
 #include "Interaction/InteractableComponent.h"
 #include "Logging/ScareSpaceLogs.h"
 #include "Inventory/InventoryComponent.h"
+#include "Interaction/CollectableComponent.h"
 
 UInteractorComponent::UInteractorComponent()
 {
@@ -74,6 +75,8 @@ void UInteractorComponent::BeginInteraction()
 	if (IsValid(CurrentInteractableComponent))
 	{
 		bIsInteracting = true;
+		// Start the interaction on the interactable component - will have different behavior depending on type
+		CurrentInteractableComponent->BeginInteraction();
 
 		/* Code related to input mappings and type of interaction */
 		switch (CurrentInteractableComponent->InteractableType)
@@ -87,9 +90,6 @@ void UInteractorComponent::BeginInteraction()
 		default:
 			UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be found on %s"), *CurrentInteractableComponent->GetOwner()->GetName());
 		}
-		// Start the interaction on the interactable component - will have different behavior depending on type
-		CurrentInteractableComponent->BeginInteraction();
-
 	}
 	else
 	{
@@ -273,15 +273,25 @@ void UInteractorComponent::ContinueHolding()
 
 void UInteractorComponent::Collect()
 {
-	UE_LOG(LogInteraction, Display, TEXT("Begin collecting, needs to interact with inventory component"));
 	// Get inventory component from the owner
 	if (ThisCharacter = Cast<ACharacter>(GetOwner()))
 	{
 		UInventoryComponent* InventoryComp = ThisCharacter->FindComponentByClass<UInventoryComponent>();
 		if (IsValid(InventoryComp))
 		{
-			// Get name of item from the collectible component
-			InventoryComp->AddItemToInventory(CurrentInteractableComponent->GetItemName());
+			if (UCollectableComponent* CollectableComp = Cast<UCollectableComponent>(CurrentInteractableComponent))
+			{
+				// Get name of item from the collectible component and add to inventory
+				if (InventoryComp->AddItemToInventory(CollectableComp->GetItemName()))
+				{
+					CollectableComp->GetOwner()->Destroy();
+					UE_LOG(LogInteraction, Display, TEXT("Successfully added %s to inventory"), *CollectableComp->GetItemName().ToString());
+				}
+				else
+				{
+					UE_LOG(LogInteraction, Display, TEXT("Could not add %s to inventory"), *CollectableComp->GetItemName().ToString());
+				}
+			}
 		}
 		else
 		{

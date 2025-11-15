@@ -11,12 +11,5 @@ UCollectableComponent::UCollectableComponent()
 
 void UCollectableComponent::BeginInteraction()
 {
-	// Just test code
-	UE_LOG(LogInteraction, Display, TEXT("Collectable interacted with"));
-	// For a collectable, we just destroy the owner actor
-	AActor* OwnerActor = GetOwner();
-	if (IsValid(OwnerActor))
-	{
-		OwnerActor->Destroy();
-	}
+	UE_LOG(LogInteraction, Display, TEXT("This is where visual and sound effects are played by the collected item"));
 }
