@@ -8,6 +8,10 @@
 
 class UInputMappingContext;
 class UInputAction;
+class UUserWidget;
+
+// Define the event signature. It will send the complete set of item names.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryUpdatedSignature, const TSet<FName>&, NewItemSet);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SCARESPACE_API UInventoryComponent : public UActorComponent
@@ -46,6 +50,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool AddItemToInventory(FName ItemName);
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool RemoveItemFromInventory(FName ItemName);
+
+	// Returns current set of inventory items
+	UFUNCTION(BlueprintPure, Category = "Inventory")
+	TSet<FName> GetInventoryItems() const { return InventoryItems; }
+
+	// This is the event the widget will bind to in order to update the inventory display
+	UPROPERTY(BlueprintAssignable, Category = "Inventory|Events")
+	FOnInventoryUpdatedSignature OnInventoryUpdated;
+
 	// The controller that owns this interactor component
 	TObjectPtr<APlayerController> ThisController;
 
@@ -64,6 +79,10 @@ protected:
 	//This is the main database of all items.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	TObjectPtr<UDataTable> ItemDatabase;
+
+	// Inventory widget reference
+	UPROPERTY(Transient, EditDefaultsOnly, Category = "Inventory|UI")
+	TObjectPtr<UUserWidget> InventoryWidget;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	bool bIsInventoryOpen = false;

@@ -289,7 +289,7 @@ void UInteractorComponent::Collect()
 				}
 				else
 				{
-					UE_LOG(LogInteraction, Display, TEXT("Could not add %s to inventory"), *CollectableComp->GetItemName().ToString());
+					UE_LOG(LogInteraction, Warning, TEXT("Could not add %s to inventory"), *CollectableComp->GetItemName().ToString());
 				}
 			}
 		}

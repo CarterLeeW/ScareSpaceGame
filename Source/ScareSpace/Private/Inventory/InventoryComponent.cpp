@@ -8,6 +8,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "Logging/ScareSpaceLogs.h"
 #include "ItemStructs.h"
+#include "Blueprint/UserWidget.h"
+
 UInventoryComponent::UInventoryComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -28,6 +30,7 @@ bool UInventoryComponent::AddItemToInventory(FName ItemName)
 			{
 				InventoryItems.Add(ItemName);
 				UE_LOG(LogInventory, Display, TEXT("Adding %s to inventory"), *ItemName.ToString());
+				OnInventoryUpdated.Broadcast(InventoryItems);
 				// List inventory items for debugging
 				for (const FName& InventoryItem : InventoryItems)
 				{
@@ -40,6 +43,28 @@ bool UInventoryComponent::AddItemToInventory(FName ItemName)
 		UE_LOG(LogInventory, Warning, TEXT("Item name: %s does not exist in the database"), *ItemName.ToString());
 	}
 	UE_LOG(LogInventory, Warning, TEXT("Item database is not found on the Inventory Component"));
+	return false;
+}
+
+bool UInventoryComponent::RemoveItemFromInventory(FName ItemName)
+{
+	// only remove if item is in inventory
+	if (InventoryItems.Contains(ItemName))
+	{
+		InventoryItems.Remove(ItemName);
+		UE_LOG(LogInventory, Display, TEXT("Removed %s from inventory"), *ItemName.ToString());
+		OnInventoryUpdated.Broadcast(InventoryItems);
+		// List inventory items for debugging
+		for (const FName& InventoryItem : InventoryItems)
+		{
+			UE_LOG(LogInventory, Display, TEXT("Current Inventory Item: %s"), *InventoryItem.ToString());
+		}
+		return true;
+	}
+	else
+	{
+		UE_LOG(LogInventory, Warning, TEXT("Cannot remove %s from inventory because it is not present"), *ItemName.ToString());
+	}
 	return false;
 }
 
@@ -79,6 +104,8 @@ void UInventoryComponent::OpenInventoryMenu()
 		Subsystem->AddMappingContext(InventoryMenuContext, 0);
 		Subsystem->RemoveMappingContext(InventoryGameplayContext);
 	}
+	// Open inventory widget
+	InventoryWidget->AddToViewport();
 	bIsInventoryOpen = true;
 }
 
@@ -91,5 +118,7 @@ void UInventoryComponent::CloseInventoryMenu()
 		Subsystem->RemoveMappingContext(InventoryMenuContext);
 		Subsystem->AddMappingContext(InventoryGameplayContext, 0);
 	}
+	// Close inventory widget
+	InventoryWidget->RemoveFromParent();
 	bIsInventoryOpen = false;
 }
