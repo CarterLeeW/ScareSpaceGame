@@ -80,9 +80,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	TObjectPtr<UDataTable> ItemDatabase;
 
-	// Inventory widget reference
-	UPROPERTY(Transient, EditDefaultsOnly, Category = "Inventory|UI")
-	TObjectPtr<UUserWidget> InventoryWidget;
+	// Inventory Widget UMG Blueprint asset - must be set in the editor
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> InventoryWidgetClass;
+
+	// Inventory widget instance
+	UPROPERTY()
+	TObjectPtr<UUserWidget> InventoryWidgetInstance;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	bool bIsInventoryOpen = false;

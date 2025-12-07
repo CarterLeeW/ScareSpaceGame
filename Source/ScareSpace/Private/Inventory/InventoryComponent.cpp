@@ -92,33 +92,45 @@ void UInventoryComponent::BeginPlay()
 		EnhancedInputComponent->BindAction(CloseInventoryMenuAction, ETriggerEvent::Started, this, &UInventoryComponent::CloseInventoryMenu);
 	}
 
+	// Create the inventory widget
+	InventoryWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
+
 }
 
 void UInventoryComponent::OpenInventoryMenu()
-{
-	UE_LOG(LogInventory, Display, TEXT("Open Inventory"));
-
-	checkf(ThisController, TEXT("PlayerController cannot be found when opening inventory."));
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
-	{
-		Subsystem->AddMappingContext(InventoryMenuContext, 0);
-		Subsystem->RemoveMappingContext(InventoryGameplayContext);
-	}
+{	
 	// Open inventory widget
-	InventoryWidget->AddToViewport();
-	bIsInventoryOpen = true;
+	if (IsValid(InventoryWidgetInstance))
+	{
+		UE_LOG(LogInventory, Display, TEXT("Open Inventory"));
+
+		checkf(ThisController, TEXT("PlayerController cannot be found when opening inventory."));
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(InventoryMenuContext, 0);
+			Subsystem->RemoveMappingContext(InventoryGameplayContext);
+		}
+
+		InventoryWidgetInstance->AddToViewport();
+		bIsInventoryOpen = true;
+	}
 }
 
 void UInventoryComponent::CloseInventoryMenu()
 {
-	UE_LOG(LogInventory, Display, TEXT("Close Inventory"));
-	checkf(ThisController, TEXT("PlayerController cannot be found when closing inventory."));
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
-	{
-		Subsystem->RemoveMappingContext(InventoryMenuContext);
-		Subsystem->AddMappingContext(InventoryGameplayContext, 0);
-	}
+	
 	// Close inventory widget
-	InventoryWidget->RemoveFromParent();
-	bIsInventoryOpen = false;
+	if (IsValid(InventoryWidgetInstance))
+	{
+		UE_LOG(LogInventory, Display, TEXT("Close Inventory"));
+		checkf(ThisController, TEXT("PlayerController cannot be found when closing inventory."));
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
+		{
+			Subsystem->RemoveMappingContext(InventoryMenuContext);
+			Subsystem->AddMappingContext(InventoryGameplayContext, 0);
+		}
+
+		InventoryWidgetInstance->RemoveFromParent();
+		bIsInventoryOpen = false;
+	}
 }
