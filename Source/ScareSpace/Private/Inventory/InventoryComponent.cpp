@@ -107,11 +107,15 @@ void UInventoryComponent::OpenInventoryMenu()
 		checkf(ThisController, TEXT("PlayerController cannot be found when opening inventory."));
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
 		{
-			Subsystem->AddMappingContext(InventoryMenuContext, 0);
+			Subsystem->AddMappingContext(InventoryMenuContext, 10);
 			Subsystem->RemoveMappingContext(InventoryGameplayContext);
 		}
 
 		InventoryWidgetInstance->AddToViewport();
+		FInputModeGameAndUI InputModeData;
+		InputModeData.SetWidgetToFocus(InventoryWidgetInstance->TakeWidget());
+		ThisController->SetInputMode(InputModeData);
+		ThisController->bShowMouseCursor = true;
 		bIsInventoryOpen = true;
 	}
 }
@@ -131,6 +135,9 @@ void UInventoryComponent::CloseInventoryMenu()
 		}
 
 		InventoryWidgetInstance->RemoveFromParent();
+		FInputModeGameOnly InputModeData;
+		ThisController->SetInputMode(InputModeData);
+		ThisController->bShowMouseCursor = false;
 		bIsInventoryOpen = false;
 	}
 }

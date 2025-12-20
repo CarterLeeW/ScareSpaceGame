@@ -11,6 +11,8 @@ class UInputMappingContext;
 class APlayerCharacter;
 struct FInputActionValue;
 class UInteractableComponent;
+class UInputConfigData;
+class UUserWidget;
 
 /**
  * 
@@ -44,6 +46,17 @@ public:
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputAction> LookAction;
+
+	/* End input actions */
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputConfigData* InputConfig;
+
+	UPROPERTY()
+	TArray<UInputMappingContext*> ActiveContextSnapshot;
+
+	// Switches between normal and menu input mappings
+	void SetMenuState(bool bIsMenuOpen, UUserWidget* InventoryWidgetInstance);
 
 protected:
 	/* Begin MappingContexts */

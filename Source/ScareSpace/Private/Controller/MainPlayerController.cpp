@@ -10,11 +10,68 @@
 #include "DrawDebugHelpers.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Controller/InputConfigData.h"
+#include "Blueprint/UserWidget.h"
 
 void AMainPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
+}
+
+void AMainPlayerController::SetMenuState(bool bIsMenuOpen, UUserWidget* InventoryWidgetInstance)
+{
+	if (!InputConfig)
+	{
+		return;
+	}
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		if (bIsMenuOpen)
+		{
+			// 1. Snapshot: Check which gameplay contexts are currently active
+			ActiveContextSnapshot.Empty();
+			for (UInputMappingContext* IMC : InputConfig->AllGameplayContexts)
+			{
+				if (Subsystem->HasMappingContext(IMC))
+				{
+					ActiveContextSnapshot.Add(IMC);
+				}
+			}
+			// 2. Wipe all input
+			Subsystem->ClearAllMappings();
+
+			// 3. Add Menu Contexts
+			for (UInputMappingContext* MenuIMC : InputConfig->MenuContexts)
+			{
+				Subsystem->AddMappingContext(MenuIMC, 10);
+			}
+			// 4. Input Mode
+			FInputModeUIOnly Mode;
+			if (InventoryWidgetInstance)
+			{
+				Mode.SetWidgetToFocus(InventoryWidgetInstance->GetCachedWidget());
+			}
+			SetInputMode(Mode);
+			bShowMouseCursor = true;
+		}
+		else
+		{
+			// 1. Wipe Menu input
+			Subsystem->ClearAllMappings();
+
+			// 2. Restore only what was active before
+			for (UInputMappingContext* RestoreIMC : ActiveContextSnapshot)
+			{
+				Subsystem->AddMappingContext(RestoreIMC, 0);
+			}
+			ActiveContextSnapshot.Empty();
+
+			// 3. Return to Gameplay
+			SetInputMode(FInputModeGameOnly());
+			bShowMouseCursor = false;
+		}
+	}
 }
 
 void AMainPlayerController::Jump()
