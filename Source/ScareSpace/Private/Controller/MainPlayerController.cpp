@@ -33,9 +33,10 @@ void AMainPlayerController::SetMenuState(bool bIsMenuOpen, UUserWidget* Inventor
 			ActiveContextSnapshot.Empty();
 			for (UInputMappingContext* IMC : InputConfig->AllGameplayContexts)
 			{
-				if (Subsystem->HasMappingContext(IMC))
+				int32 CurrentPriority = 0;
+				if (Subsystem->HasMappingContext(IMC, CurrentPriority))
 				{
-					ActiveContextSnapshot.Add(IMC);
+					ActiveContextSnapshot.Add(IMC, CurrentPriority);
 				}
 			}
 			// 2. Wipe all input
@@ -47,12 +48,14 @@ void AMainPlayerController::SetMenuState(bool bIsMenuOpen, UUserWidget* Inventor
 				Subsystem->AddMappingContext(MenuIMC, 10);
 			}
 			// 4. Input Mode
-			FInputModeUIOnly Mode;
+			FInputModeGameAndUI Mode;
 			if (InventoryWidgetInstance)
 			{
-				Mode.SetWidgetToFocus(InventoryWidgetInstance->GetCachedWidget());
+				Mode.SetWidgetToFocus(InventoryWidgetInstance->TakeWidget());
 			}
 			SetInputMode(Mode);
+			InventoryWidgetInstance->SetKeyboardFocus();
+			Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 			bShowMouseCursor = true;
 		}
 		else
@@ -61,9 +64,9 @@ void AMainPlayerController::SetMenuState(bool bIsMenuOpen, UUserWidget* Inventor
 			Subsystem->ClearAllMappings();
 
 			// 2. Restore only what was active before
-			for (UInputMappingContext* RestoreIMC : ActiveContextSnapshot)
+			for (const TPair<UInputMappingContext*, int32> Pair : ActiveContextSnapshot)
 			{
-				Subsystem->AddMappingContext(RestoreIMC, 0);
+				Subsystem->AddMappingContext(Pair.Key, Pair.Value);
 			}
 			ActiveContextSnapshot.Empty();
 

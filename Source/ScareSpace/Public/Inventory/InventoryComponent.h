@@ -9,6 +9,7 @@
 class UInputMappingContext;
 class UInputAction;
 class UUserWidget;
+class AMainPlayerController;
 
 // Define the event signature. It will send the complete set of item names.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryUpdatedSignature, const TSet<FName>&, NewItemSet);
@@ -38,6 +39,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputAction> CloseInventoryMenuAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UInputAction> ToggleInventoryMenuAction;
+
+	// Toggle inventory: will replace open/close actions
+	void ToggleInventoryMenu();
+
 	/*
 	* Operations within the inventory widget with mouse and keyboard will be handled within the widget itself
 	* using widget events and not input actions.
@@ -62,7 +69,7 @@ public:
 	FOnInventoryUpdatedSignature OnInventoryUpdated;
 
 	// The controller that owns this interactor component
-	TObjectPtr<APlayerController> ThisController;
+	TObjectPtr<AMainPlayerController> ThisController;
 
 protected:
 	virtual void BeginPlay() override;

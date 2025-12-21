@@ -3,7 +3,7 @@
 
 #include "Inventory/InventoryComponent.h"
 #include "GameFramework/Character.h"
-#include "GameFramework/PlayerController.h"
+#include "Controller/MainPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Logging/ScareSpaceLogs.h"
@@ -15,6 +15,46 @@ UInventoryComponent::UInventoryComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+
+void UInventoryComponent::ToggleInventoryMenu()
+{
+	if (!ThisController) return;
+	UE_LOG(LogInventory, Warning, TEXT("ToggleInventoryMenu Action Triggered! Current State: %s"),
+		bIsInventoryOpen ? TEXT("Open") : TEXT("Closed"));
+
+	bIsInventoryOpen = !bIsInventoryOpen;
+
+	// Open the inventory menu
+	if (bIsInventoryOpen)
+	{
+		// Create widget if not already created
+		if (!IsValid(InventoryWidgetInstance) && InventoryWidgetClass)
+		{
+			UE_LOG(LogUI, Warning, TEXT("Inventory widget instance was not valid before opening"));
+			InventoryWidgetInstance = CreateWidget<UUserWidget>(ThisController, InventoryWidgetClass);
+		}
+		if (IsValid(InventoryWidgetInstance))
+		{
+			// Show the UI
+			InventoryWidgetInstance->SetIsFocusable(true);
+			InventoryWidgetInstance->AddToViewport();
+			// Tell Controller to use UI input mode
+			ThisController->SetMenuState(true, InventoryWidgetInstance);
+		}
+	}
+	// Close the inventory menu
+	else
+	{
+		// Hide UI
+		if (IsValid(InventoryWidgetInstance))
+		{
+			InventoryWidgetInstance->RemoveFromParent();
+		}
+
+		// Tell Controller to restore gameplay
+		ThisController->SetMenuState(false, nullptr);
+	}
+}
 
 bool UInventoryComponent::AddItemToInventory(FName ItemName)
 {
@@ -76,8 +116,8 @@ void UInventoryComponent::BeginPlay()
 
 	ACharacter* ThisChar = Cast<ACharacter>(GetOwner());
 	checkf(ThisChar, TEXT("InventoryComponent must be attached to a Character!"));
-	ThisController = Cast<APlayerController>(ThisChar->GetController());
-	checkf(ThisController, TEXT("InventoryComponent must be attached to a Character with a PlayerController!"));
+	ThisController = Cast<AMainPlayerController>(ThisChar->GetController());
+	checkf(ThisController, TEXT("InventoryComponent must be attached to a Character with a Player Controller!"));
 
 	// Bind Interactor input actions to the controller
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
@@ -88,8 +128,9 @@ void UInventoryComponent::BeginPlay()
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(ThisController->InputComponent))
 	{
 		// Interaction
-		EnhancedInputComponent->BindAction(OpenInventoryMenuAction, ETriggerEvent::Started, this, &UInventoryComponent::OpenInventoryMenu);
-		EnhancedInputComponent->BindAction(CloseInventoryMenuAction, ETriggerEvent::Started, this, &UInventoryComponent::CloseInventoryMenu);
+		//EnhancedInputComponent->BindAction(OpenInventoryMenuAction, ETriggerEvent::Started, this, &UInventoryComponent::OpenInventoryMenu);
+		//EnhancedInputComponent->BindAction(CloseInventoryMenuAction, ETriggerEvent::Started, this, &UInventoryComponent::CloseInventoryMenu);
+		EnhancedInputComponent->BindAction(ToggleInventoryMenuAction, ETriggerEvent::Started, this, &UInventoryComponent::ToggleInventoryMenu);
 	}
 
 	// Create the inventory widget
@@ -104,7 +145,7 @@ void UInventoryComponent::OpenInventoryMenu()
 	{
 		UE_LOG(LogInventory, Display, TEXT("Open Inventory"));
 
-		checkf(ThisController, TEXT("PlayerController cannot be found when opening inventory."));
+		checkf(ThisController, TEXT("Player Controller cannot be found when opening inventory."));
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(InventoryMenuContext, 10);
@@ -127,7 +168,7 @@ void UInventoryComponent::CloseInventoryMenu()
 	if (IsValid(InventoryWidgetInstance))
 	{
 		UE_LOG(LogInventory, Display, TEXT("Close Inventory"));
-		checkf(ThisController, TEXT("PlayerController cannot be found when closing inventory."));
+		checkf(ThisController, TEXT("Player Controller cannot be found when closing inventory."));
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
 		{
 			Subsystem->RemoveMappingContext(InventoryMenuContext);

@@ -53,7 +53,7 @@ public:
 	UInputConfigData* InputConfig;
 
 	UPROPERTY()
-	TArray<UInputMappingContext*> ActiveContextSnapshot;
+	TMap<UInputMappingContext*, int32> ActiveContextSnapshot;
 
 	// Switches between normal and menu input mappings
 	void SetMenuState(bool bIsMenuOpen, UUserWidget* InventoryWidgetInstance);
