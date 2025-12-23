@@ -48,6 +48,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> HoldingMappingContext;
 
+	// Pivoting Context
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputMappingContext> PivotingMappingContext;
+
 	/* Begin input actions */
 	/* Interaction Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
@@ -56,6 +60,10 @@ public:
 	/* Throw Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputAction> ThrowAction;
+
+	/* Push Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UInputAction> PushAction;
 
 	/* End input actions */
 
@@ -77,6 +85,8 @@ protected:
 	void ContinueInteraction();
 	/* For throwing objects that are being held */
 	void ThrowObject();
+	/* For pushing objects that are being pivoted */
+	void PushObject();
 
 private:
 	/**

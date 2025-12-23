@@ -53,6 +53,7 @@ void UInteractorComponent::BeginPlay()
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &UInteractorComponent::RequestEndInteraction);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &UInteractorComponent::ContinueInteraction);
 		EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &UInteractorComponent::ThrowObject);
+		EnhancedInputComponent->BindAction(PushAction, ETriggerEvent::Triggered, this, &UInteractorComponent::PushObject);
 	}
 
 	// Store physics handle for use in interactions
@@ -121,6 +122,10 @@ void UInteractorComponent::RequestEndInteraction()
 					PhysicsHandle->ReleaseComponent();
 				}
 			}
+			else if (CurrentInteractableComponent->InteractableType == EInteractableType::Pivotable)
+			{
+				// End Pivoting and restore controls
+			}
 			// Check the object's velocity so you can't shoot it to the moon
 			FVector PlayerVelocity = GetOwner()->GetVelocity();
 			// End the interaction on the interactable component
@@ -134,11 +139,12 @@ void UInteractorComponent::RequestEndInteraction()
 		CurrentInteractableComponent = nullptr;
 		bIsInteracting = false;
 	}
-	// Remove the holding mapping context
+	// Remove the mapping contexts
 	checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
 	{
 		Subsystem->RemoveMappingContext(HoldingMappingContext);
+		Subsystem->RemoveMappingContext(PivotingMappingContext);
 	}
 }
 
@@ -202,6 +208,11 @@ void UInteractorComponent::ThrowObject()
 	}
 }
 
+void UInteractorComponent::PushObject()
+{
+
+}
+
 void UInteractorComponent::ArmsLengthTrace(FHitResult& OutResult)
 {
 	FVector TraceStart = GetComponentLocation();
@@ -242,7 +253,7 @@ void UInteractorComponent::BeginHolding()
 	checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
 	{
-		Subsystem->AddMappingContext(HoldingMappingContext, 1);
+		Subsystem->AddMappingContext(HoldingMappingContext, 5);
 	}
 	
 
@@ -283,11 +294,20 @@ void UInteractorComponent::ContinueHolding()
 
 void UInteractorComponent::BeginPivoting()
 {
+	// What do we need to begin pivoting?
+	// Add input context for pivoting which should stop mouse look and add right click
+	// Give player the pivoting controls mapping context
+	checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(PivotingMappingContext, 5);
+	}
 	UE_LOG(LogInteraction, Display, TEXT("Pivotable component grabbed"));
 }
 
 void UInteractorComponent::ContinuePivoting()
 {
+
 }
 
 void UInteractorComponent::Collect()
