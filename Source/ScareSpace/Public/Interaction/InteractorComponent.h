@@ -92,6 +92,11 @@ private:
 	// Current length object is being held at
 	float TargetHoldLength = 0.0f;
 
+	// Called when the interactable object is to be pivoted
+	void BeginPivoting();
+	// Called during ContinueInteraction to continue pivoting
+	void ContinuePivoting();
+
 	// Called when interacting with a collectable item
 	void Collect();
 
@@ -107,4 +112,7 @@ private:
 
 	// This owners PhysicsHandle
 	TObjectPtr<UPhysicsHandleComponent> PhysicsHandle;
+
+	// True if the touched component is part of a moveable unit (ex. handle) - false if it is static (ex. door frame)
+	bool IsChildOfPivotableComponent(UPrimitiveComponent* ComponentToCheck);
 };

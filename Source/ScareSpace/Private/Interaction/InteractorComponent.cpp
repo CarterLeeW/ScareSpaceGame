@@ -87,6 +87,12 @@ void UInteractorComponent::BeginInteraction()
 		case EInteractableType::Collectable:
 			Collect(); // if mouse is held down, it continues to ask for interaction
 			break;
+		case EInteractableType::Pivotable:
+			if (IsChildOfPivotableComponent(ReachableTargetHitResult.GetComponent()))
+			{
+				BeginPivoting();
+			}
+			break;
 		default:
 			UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be found on %s"), *CurrentInteractableComponent->GetOwner()->GetName());
 		}
@@ -152,8 +158,12 @@ void UInteractorComponent::ContinueInteraction()
 	case EInteractableType::Holdable:
 		ContinueHolding();
 		break;
+	case EInteractableType::Pivotable:
+		ContinuePivoting();
+		break;
 	default:
-		UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be found on %s"), *CurrentInteractableComponent->GetOwner()->GetName());
+		//UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be found on %s"), *CurrentInteractableComponent->GetOwner()->GetName());
+		break;
 	}
 
 	//UE_LOG(LogInteraction, Display, TEXT("Continuing interaction"));
@@ -271,6 +281,15 @@ void UInteractorComponent::ContinueHolding()
 	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
 }
 
+void UInteractorComponent::BeginPivoting()
+{
+	UE_LOG(LogInteraction, Display, TEXT("Pivotable component grabbed"));
+}
+
+void UInteractorComponent::ContinuePivoting()
+{
+}
+
 void UInteractorComponent::Collect()
 {
 	// Get inventory component from the owner
@@ -303,4 +322,27 @@ void UInteractorComponent::Collect()
 		UE_LOG(LogInteraction, Warning, TEXT("Owner is not a character!"));
 	}
 	bIsInteracting = false;
+}
+
+bool UInteractorComponent::IsChildOfPivotableComponent(UPrimitiveComponent* ComponentToCheck)
+{
+	if (IsValid(ComponentToCheck))
+	{
+		TArray<USceneComponent*, FDefaultAllocator> Parents;
+		ComponentToCheck->GetParentComponents(Parents);
+		for (USceneComponent* ParentComp : Parents)
+		{
+			if (IsValid(ParentComp))
+			{
+				if (UInteractableComponent* InteractableComp = Cast<UInteractableComponent>(ParentComp))
+				{
+					if (InteractableComp->InteractableType == EInteractableType::Pivotable)
+					{
+						return true;
+					}
+				}
+			}
+		}
+	}
+	return false;
 }

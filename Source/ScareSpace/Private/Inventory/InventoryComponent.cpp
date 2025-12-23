@@ -19,8 +19,6 @@ UInventoryComponent::UInventoryComponent()
 void UInventoryComponent::ToggleInventoryMenu()
 {
 	if (!ThisController) return;
-	UE_LOG(LogInventory, Warning, TEXT("ToggleInventoryMenu Action Triggered! Current State: %s"),
-		bIsInventoryOpen ? TEXT("Open") : TEXT("Closed"));
 
 	bIsInventoryOpen = !bIsInventoryOpen;
 
