@@ -128,8 +128,6 @@ void UInteractorComponent::RequestEndInteraction()
 					PhysicsHandle->ReleaseComponent();
 				}
 			}
-			// Check the object's velocity so you can't shoot it to the moon
-			FVector PlayerVelocity = GetOwner()->GetVelocity();
 			// End the interaction on the interactable component
 			CurrentInteractableComponent->EndInteraction();
 		}
@@ -382,7 +380,7 @@ void UInteractorComponent::CalculateLateralOffset(const FInputActionValue& Value
 void UInteractorComponent::Collect()
 {
 	// Get inventory component from the owner
-	if (ThisCharacter = Cast<ACharacter>(GetOwner()))
+	if (ThisCharacter)
 	{
 		UInventoryComponent* InventoryComp = ThisCharacter->FindComponentByClass<UInventoryComponent>();
 		if (IsValid(InventoryComp))
