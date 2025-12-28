@@ -11,6 +11,8 @@
 #include "Logging/ScareSpaceLogs.h"
 #include "Inventory/InventoryComponent.h"
 #include "Interaction/CollectableComponent.h"
+#include "Interaction/PivotableComponent.h"
+#include "InputActionValue.h"
 
 UInteractorComponent::UInteractorComponent()
 {
@@ -54,6 +56,7 @@ void UInteractorComponent::BeginPlay()
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &UInteractorComponent::ContinueInteraction);
 		EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &UInteractorComponent::ThrowObject);
 		EnhancedInputComponent->BindAction(PushAction, ETriggerEvent::Triggered, this, &UInteractorComponent::PushObject);
+		EnhancedInputComponent->BindAction(PivotAction, ETriggerEvent::Triggered, this, &UInteractorComponent::CalculatePivotParameters);
 	}
 
 	// Store physics handle for use in interactions
@@ -113,7 +116,7 @@ void UInteractorComponent::RequestEndInteraction()
 		if (IsValid(CurrentInteractableComponent))
 		{
 			// If the object was holdable, release it from the physics handle.
-			if (CurrentInteractableComponent->InteractableType == EInteractableType::Holdable)
+			if (CurrentInteractableComponent->InteractableType == EInteractableType::Holdable || CurrentInteractableComponent->InteractableType == EInteractableType::Pivotable)
 			{
 				// If object has already been thrown, then this has already occurred
 				if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent())
@@ -121,10 +124,6 @@ void UInteractorComponent::RequestEndInteraction()
 					UE_LOG(LogInteraction, Display, TEXT("object dropped without throwing"));
 					PhysicsHandle->ReleaseComponent();
 				}
-			}
-			else if (CurrentInteractableComponent->InteractableType == EInteractableType::Pivotable)
-			{
-				// End Pivoting and restore controls
 			}
 			// Check the object's velocity so you can't shoot it to the moon
 			FVector PlayerVelocity = GetOwner()->GetVelocity();
@@ -294,8 +293,19 @@ void UInteractorComponent::ContinueHolding()
 
 void UInteractorComponent::BeginPivoting()
 {
-	// What do we need to begin pivoting?
-	// Add input context for pivoting which should stop mouse look and add right click
+	UPrimitiveComponent* ComponentToHold = ReachableTargetHitResult.GetComponent();
+	if (!IsValid(ComponentToHold))
+	{
+		UE_LOG(LogInteraction, Warning, TEXT("Component to hold is not valid!"));
+		return;
+	}
+	ComponentToHold->SetSimulatePhysics(true);
+	ComponentToHold->WakeAllRigidBodies();
+	// --Uses actor's root component-- should this change??
+	TargetHoldLength = FVector::Dist(GetComponentLocation(), ReachableTargetHitResult.ImpactPoint);
+	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * TargetHoldLength);
+	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
+
 	// Give player the pivoting controls mapping context
 	checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
@@ -303,11 +313,35 @@ void UInteractorComponent::BeginPivoting()
 		Subsystem->AddMappingContext(PivotingMappingContext, 5);
 	}
 	UE_LOG(LogInteraction, Display, TEXT("Pivotable component grabbed"));
+
+	PhysicsHandle->GrabComponentAtLocationWithRotation(
+		ComponentToHold,
+		NAME_None,
+		ReachableTargetHitResult.ImpactPoint,
+		GetComponentRotation()
+	);
 }
 
 void UInteractorComponent::ContinuePivoting()
 {
+	// If the distance between the player and the held object is greater than the HoldAutoDropDistance, then drop it
+	if (CurrentInteractableComponent)
+	{
+		float CurrentHeldLength = FVector::Dist(GetComponentLocation(), CurrentInteractableComponent->GetOwner()->GetActorLocation());
+		// UE_LOG(LogInteraction, Display, TEXT("current held length: %f"), CurrentHeldLength);
+		if (CurrentHeldLength > HoldAutoDropDistance)
+		{
+			RequestEndInteraction();
+			return;
+		}
+	}
+	// UE_LOG(LogInteraction, Display, TEXT("target hold length: %f"), TargetHoldLength);
+	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * TargetHoldLength);
+	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
+}
 
+void UInteractorComponent::CalculatePivotParameters(const FInputActionValue& Value)
+{
 }
 
 void UInteractorComponent::Collect()
@@ -344,23 +378,25 @@ void UInteractorComponent::Collect()
 	bIsInteracting = false;
 }
 
-bool UInteractorComponent::IsChildOfPivotableComponent(UPrimitiveComponent* ComponentToCheck)
+bool UInteractorComponent::IsChildOfPivotableComponent(UPrimitiveComponent* TargetedComponent)
 {
-	if (IsValid(ComponentToCheck))
+	UPivotableComponent* PivotableComp = Cast<UPivotableComponent>(CurrentInteractableComponent);
+	if (IsValid(PivotableComp))
 	{
+		checkf(PivotableComp->PivotableParentMeshName != NAME_None, TEXT("PivotableComponent %s must have a valid PivotableParentMeshName!"), *PivotableComp->GetName());
+		if (TargetedComponent->GetName() == PivotableComp->PivotableParentMeshName)
+		{
+			UE_LOG(LogInteraction, Display, TEXT("Component matched"));
+			return true;
+		}
 		TArray<USceneComponent*, FDefaultAllocator> Parents;
-		ComponentToCheck->GetParentComponents(Parents);
+		TargetedComponent->GetParentComponents(Parents);
 		for (USceneComponent* ParentComp : Parents)
 		{
-			if (IsValid(ParentComp))
+			if (ParentComp->GetName() == PivotableComp->PivotableParentMeshName)
 			{
-				if (UInteractableComponent* InteractableComp = Cast<UInteractableComponent>(ParentComp))
-				{
-					if (InteractableComp->InteractableType == EInteractableType::Pivotable)
-					{
-						return true;
-					}
-				}
+				UE_LOG(LogInteraction, Display, TEXT("Component matched"));
+				return true;
 			}
 		}
 	}

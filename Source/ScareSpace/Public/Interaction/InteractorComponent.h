@@ -10,6 +10,7 @@ class UInputMappingContext;
 class UInputAction;
 class UInteractableComponent;
 class UPhysicsHandleComponent;
+struct FInputActionValue;
 
 UCLASS( ClassGroup=(Interacting), meta=(BlueprintSpawnableComponent) )
 class SCARESPACE_API UInteractorComponent : public USceneComponent
@@ -65,6 +66,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputAction> PushAction;
 
+	/* Pivot Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UInputAction> PivotAction;
+
 	/* End input actions */
 
 	// The controller that owns this interactor component
@@ -106,6 +111,8 @@ private:
 	void BeginPivoting();
 	// Called during ContinueInteraction to continue pivoting
 	void ContinuePivoting();
+	// Replaces look actions to calculate pivot parameters
+	void CalculatePivotParameters(const FInputActionValue& Value);
 
 	// Called when interacting with a collectable item
 	void Collect();
@@ -124,5 +131,5 @@ private:
 	TObjectPtr<UPhysicsHandleComponent> PhysicsHandle;
 
 	// True if the touched component is part of a moveable unit (ex. handle) - false if it is static (ex. door frame)
-	bool IsChildOfPivotableComponent(UPrimitiveComponent* ComponentToCheck);
+	bool IsChildOfPivotableComponent(UPrimitiveComponent * TargetedComponent);
 };

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/SceneComponent.h"
+#include "Components/ActorComponent.h"
 #include "InteractableComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(OnInteractionEnded);
@@ -14,12 +14,12 @@ enum class EInteractableType : uint8
 {
 	Collectable,
 	Holdable,
-	Door,
-	Pivotable
+	Pivotable,
+	Slidable
 };
 
 UCLASS(Abstract, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class SCARESPACE_API UInteractableComponent : public USceneComponent
+class SCARESPACE_API UInteractableComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -39,5 +39,7 @@ public:
 	virtual void EndInteraction();
 
 	OnInteractionEnded InteractionEnded;
+
+	TSoftObjectPtr<UTexture2D> InteractionIcon;
 
 };

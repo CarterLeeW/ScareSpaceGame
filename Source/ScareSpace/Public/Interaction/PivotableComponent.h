@@ -17,4 +17,7 @@ class SCARESPACE_API UPivotableComponent : public UInteractableComponent
 public:
 	UPivotableComponent();
 	
+	// This is the highest component in the hierarchy that moves when pivoting
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Pivotable")
+	FName PivotableParentMeshName;
 };
