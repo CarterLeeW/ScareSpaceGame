@@ -28,9 +28,12 @@ void UInteractorComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	ArmsLengthTrace(ReachableTargetHitResult);
-
-}
+	// Save a trace when we are already interacting
+	if (!bIsInteracting)
+	{
+		ArmsLengthTrace(ReachableTargetHitResult);
+	}
+	}
 
 
 void UInteractorComponent::BeginPlay()
@@ -56,7 +59,7 @@ void UInteractorComponent::BeginPlay()
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &UInteractorComponent::ContinueInteraction);
 		EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &UInteractorComponent::ThrowObject);
 		EnhancedInputComponent->BindAction(PushAction, ETriggerEvent::Triggered, this, &UInteractorComponent::PushObject);
-		EnhancedInputComponent->BindAction(PivotAction, ETriggerEvent::Triggered, this, &UInteractorComponent::CalculatePivotParameters);
+		EnhancedInputComponent->BindAction(PivotAction, ETriggerEvent::Triggered, this, &UInteractorComponent::CalculateLateralOffset);
 	}
 
 	// Store physics handle for use in interactions
@@ -303,6 +306,7 @@ void UInteractorComponent::BeginPivoting()
 	ComponentToHold->WakeAllRigidBodies();
 	// --Uses actor's root component-- should this change??
 	TargetHoldLength = FVector::Dist(GetComponentLocation(), ReachableTargetHitResult.ImpactPoint);
+	TargetSideLength = 0.0f; // Reset side offset so we start centered on the hand
 	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * TargetHoldLength);
 	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
 
@@ -335,13 +339,44 @@ void UInteractorComponent::ContinuePivoting()
 			return;
 		}
 	}
-	// UE_LOG(LogInteraction, Display, TEXT("target hold length: %f"), TargetHoldLength);
-	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * TargetHoldLength);
+	// C. Calculate Final Location
+	FVector StartLoc = GetComponentLocation();
+
+	// Forward Vector * Forward Distance
+	FVector ForwardLoc = GetForwardVector() * TargetHoldLength;
+
+	// Right Vector * Side Distance (Calculated Fresh Every Frame)
+	FVector SideLoc = GetOwner()->GetActorRightVector() * TargetSideLength;
+
+	// Combine them
+	FVector TargetLocation = StartLoc + ForwardLoc + SideLoc;
+
+	// D. Update Handle
 	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
 }
 
-void UInteractorComponent::CalculatePivotParameters(const FInputActionValue& Value)
+void UInteractorComponent::CalculateLateralOffset(const FInputActionValue& Value)
 {
+	FVector2D MouseDelta = Value.Get<FVector2D>();
+
+	if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent())
+	{
+		// SENSITIVITY SETTINGS
+		float PushPullSensitivity = 2.0f;
+		float LateralSensitivity = 2.0f;
+
+		// A. Handle Push/Pull (Accumulate Length)
+		TargetHoldLength += (MouseDelta.Y * PushPullSensitivity);
+		// Clamp to prevent pulling through player or pushing too far
+		TargetHoldLength = FMath::Clamp(TargetHoldLength, 50.0f, 300.0f);
+
+		// B. Handle Swing (Accumulate Side Distance)
+		// We use += here so the door stays to the side when we stop moving the mouse
+		TargetSideLength += (MouseDelta.X * LateralSensitivity);
+
+		// Optional: Clamp side movement if you don't want them spinning 360 around the player
+		TargetSideLength = FMath::Clamp(TargetSideLength, -200.0f, 200.0f);
+	}
 }
 
 void UInteractorComponent::Collect()

@@ -112,7 +112,9 @@ private:
 	// Called during ContinueInteraction to continue pivoting
 	void ContinuePivoting();
 	// Replaces look actions to calculate pivot parameters
-	void CalculatePivotParameters(const FInputActionValue& Value);
+	void CalculateLateralOffset(const FInputActionValue& Value);
+	// Left/Right offset from center when pivoting
+	float TargetSideLength = 0.0f;
 
 	// Called when interacting with a collectable item
 	void Collect();
