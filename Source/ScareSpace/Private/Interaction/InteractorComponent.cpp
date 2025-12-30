@@ -33,7 +33,8 @@ void UInteractorComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	{
 		ArmsLengthTrace(ReachableTargetHitResult);
 	}
-	}
+	UpdateInteractionPrompt();
+}
 
 
 void UInteractorComponent::BeginPlay()
@@ -186,6 +187,7 @@ void UInteractorComponent::ThrowObject()
 			UE_LOG(LogInteraction, Warning, TEXT("Component to throw is not valid!"));
 			return;
 		}
+		float ObjectMass = ComponentToThrow->GetMass();
 		// Set the component to simulate physics and wake it up
 		ComponentToThrow->SetSimulatePhysics(true);
 		ComponentToThrow->WakeAllRigidBodies();
@@ -196,7 +198,7 @@ void UInteractorComponent::ThrowObject()
 		float VerticalBoost = 0.2f; // Adjust this value for more/less vertical boost
 		FVector ThrowDirection = (Forward + Up * VerticalBoost).GetSafeNormal();
 
-		FVector ThrowVelocity = ThrowDirection * TargetHoldLength * ThrowForceMultiplier;
+		FVector ThrowVelocity = (ThrowDirection * TargetHoldLength * ThrowForceMultiplier) / ObjectMass;
 		ComponentToThrow->AddImpulse(ThrowVelocity, NAME_None, true);
 
 		PhysicsHandle->ReleaseComponent();
@@ -300,6 +302,7 @@ void UInteractorComponent::BeginPivoting()
 		UE_LOG(LogInteraction, Warning, TEXT("Component to hold is not valid!"));
 		return;
 	}
+	CurrentInteractableComponent->BeginInteraction();
 	ComponentToHold->SetSimulatePhysics(true);
 	ComponentToHold->WakeAllRigidBodies();
 	// --Uses actor's root component-- should this change??
@@ -434,4 +437,25 @@ bool UInteractorComponent::IsChildOfPivotableComponent(UPrimitiveComponent* Targ
 		}
 	}
 	return false;
+}
+
+void UInteractorComponent::UpdateInteractionPrompt()
+{
+	// display interaction icon change
+	UTexture2D* CurrentIcon = nullptr;
+	if (!bIsInteracting && ReachableTargetHitResult.bBlockingHit)
+	{
+		if (UInteractableComponent* HitInteractable = ReachableTargetHitResult.GetActor()->GetComponentByClass<UInteractableComponent>())
+		{
+			CurrentIcon = HitInteractable->InteractionIcon;
+		}
+	}
+	// BROADCAST: Only fire if the icon pointer actually changed
+	if (CurrentIcon != LastInteractionIcon.Get())
+	{
+		LastInteractionIcon = CurrentIcon;
+
+		// Pass the texture to the UI
+		OnInteractionIconChanged.Broadcast(CurrentIcon);
+	}
 }

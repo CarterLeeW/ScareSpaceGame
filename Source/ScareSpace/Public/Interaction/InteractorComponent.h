@@ -6,6 +6,8 @@
 #include "Components/SceneComponent.h"
 #include "InteractorComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteractionIconChanged, UTexture2D*, NewIcon);
+
 class UInputMappingContext;
 class UInputAction;
 class UInteractableComponent;
@@ -78,6 +80,10 @@ public:
 	// The character that owns this interactor component
 	TObjectPtr<ACharacter> ThisCharacter;
 
+	// Event called when the interaction icon should be changed
+	UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	FOnInteractionIconChanged OnInteractionIconChanged;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -134,4 +140,10 @@ private:
 
 	// True if the touched component is part of a moveable unit (ex. handle) - false if it is static (ex. door frame)
 	bool IsChildOfPivotableComponent(UPrimitiveComponent * TargetedComponent);
+
+	// Update the interaction prompt icon and other stuff if applicable
+	void UpdateInteractionPrompt();
+
+	// Track the last icon to prevent spamming updates
+	TWeakObjectPtr<UTexture2D> LastInteractionIcon = nullptr;
 };

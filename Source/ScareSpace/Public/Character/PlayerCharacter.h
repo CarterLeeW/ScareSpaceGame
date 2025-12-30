@@ -30,6 +30,7 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 	// Returns InteractorComponent
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	UInteractorComponent* GetInteractorComponent() const { return InteractorComponent; }
 	// Returns PhysicsHandleComponent
 	UPhysicsHandleComponent* GetPhysicsHandleComponent() const { return PhysicsHandleComponent; }

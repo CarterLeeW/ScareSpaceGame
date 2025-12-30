@@ -40,6 +40,8 @@ public:
 
 	OnInteractionEnded InteractionEnded;
 
-	TSoftObjectPtr<UTexture2D> InteractionIcon;
+	// HUD icon for this interactable
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TObjectPtr<UTexture2D> InteractionIcon;
 
 };
