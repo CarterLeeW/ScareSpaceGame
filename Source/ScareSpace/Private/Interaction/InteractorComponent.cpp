@@ -297,19 +297,12 @@ void UInteractorComponent::ContinueHolding()
 void UInteractorComponent::BeginPivoting()
 {
 	UPrimitiveComponent* ComponentToHold = ReachableTargetHitResult.GetComponent();
-	if (!IsValid(ComponentToHold))
+	UPivotableComponent* PivotableComp = Cast<UPivotableComponent>(CurrentInteractableComponent);
+	if (!IsValid(ComponentToHold) || !IsValid(PivotableComp))
 	{
 		UE_LOG(LogInteraction, Warning, TEXT("Component to hold is not valid!"));
 		return;
 	}
-	CurrentInteractableComponent->BeginInteraction();
-	ComponentToHold->SetSimulatePhysics(true);
-	ComponentToHold->WakeAllRigidBodies();
-	// --Uses actor's root component-- should this change??
-	TargetHoldLength = FVector::Dist(GetComponentLocation(), ReachableTargetHitResult.ImpactPoint);
-	TargetSideLength = 0.0f; // Reset side offset so we start centered on the hand
-	FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * TargetHoldLength);
-	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
 
 	// Give player the pivoting controls mapping context
 	checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
@@ -317,14 +310,31 @@ void UInteractorComponent::BeginPivoting()
 	{
 		Subsystem->AddMappingContext(PivotingMappingContext, 5);
 	}
-	UE_LOG(LogInteraction, Display, TEXT("Pivotable component grabbed"));
 
-	PhysicsHandle->GrabComponentAtLocationWithRotation(
-		ComponentToHold,
-		NAME_None,
-		ReachableTargetHitResult.ImpactPoint,
-		GetComponentRotation()
-	);
+	// decide if the component is locked or not - if locked, do not allow pivoting
+	if (PivotableComp->GetIsLocked())
+	{
+		UE_LOG(LogInteraction, Display, TEXT("Pivotable component is locked, cannot pivot."));
+		return;
+	}
+	else
+	{
+		ComponentToHold->SetSimulatePhysics(true);
+		ComponentToHold->WakeAllRigidBodies();
+
+		TargetHoldLength = FVector::Dist(GetComponentLocation(), ReachableTargetHitResult.ImpactPoint);
+		TargetSideLength = 0.0f; // Reset side offset so we start centered on the hand
+		FVector TargetLocation = GetComponentLocation() + (GetForwardVector() * TargetHoldLength);
+		PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
+		PhysicsHandle->GrabComponentAtLocationWithRotation(
+			ComponentToHold,
+			NAME_None,
+			ReachableTargetHitResult.ImpactPoint,
+			GetComponentRotation()
+		);
+	}
+	// Fire cosmetics on the pivotable component
+	PivotableComp->BeginInteraction();
 }
 
 void UInteractorComponent::ContinuePivoting()

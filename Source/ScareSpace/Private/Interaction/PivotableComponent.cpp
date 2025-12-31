@@ -13,7 +13,14 @@ UPivotableComponent::UPivotableComponent()
 
 void UPivotableComponent::BeginInteraction()
 {
-    bIsBeingHeld = true;
+    if (bIsLocked)
+    {
+        // locked cosmetics
+    }
+    else
+    {
+        bIsBeingHeld = true;
+    }
 }
 
 void UPivotableComponent::EndInteraction()
@@ -30,5 +37,26 @@ void UPivotableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 void UPivotableComponent::BeginPlay()
 {
 	Super::BeginPlay();
-    
+	// Find the pivotable parent mesh component somewhere on this actor by name
+    PivotableParentMeshComponent = Cast<UStaticMeshComponent>(GetOwner()->GetDefaultSubobjectByName(PivotableParentMeshName));
+    if (!PivotableParentMeshComponent)
+    {
+        UE_LOG(LogInteraction, Warning, TEXT("PivotableComponent: Could not find PivotableParentMeshComponent with name %s on actor %s"), *PivotableParentMeshName.ToString(), *GetOwner()->GetName());
+	}
+    // do same for hinge component
+	HingeComponent = Cast<USceneComponent>(GetOwner()->GetDefaultSubobjectByName(HingeComponentName));
+    if (!HingeComponent)
+    {
+        UE_LOG(LogInteraction, Warning, TEXT("PivotableComponent: Could not find HingeComponent with name %s on actor %s"), *HingeComponentName.ToString(), *GetOwner()->GetName());
+	}
+
+	// Perform necessary default setup
+	BaseRotation = PivotableParentMeshComponent->GetComponentRotation();
+	HingeComponent->SetRelativeRotation(HingeStartingRotation);
+	PivotableParentMeshComponent->SetSimulatePhysics(true);
+}
+
+void UPivotableComponent::UpdateClosedState()
+{
+
 }
