@@ -6,6 +6,8 @@
 #include "Interaction/InteractableComponent.h"
 #include "PivotableComponent.generated.h"
 
+class UPhysicsConstraintComponent;
+
 /**
  * 
  */
@@ -45,21 +47,29 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	// Should be set on the interactor when beginning to pivot
-	UPROPERTY(BlueprintReadOnly, Category = "Pivotable")
-	bool bIsBeingHeld = false;
-	bool bIsLocked = true;
-	bool bIsClosed = false;
-	bool bCanClose = false;
-	float ClosedAngle = 5.0f;
-	FRotator BaseRotation;
-
 	// The angle the pivotable starts at (like for an open door) Leave hinge at zero in editor
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable")
 	FRotator HingeStartingRotation = FRotator::ZeroRotator;
+	FRotator BaseRotation;
+
+	// Should be set on the interactor when beginning to pivot
+	UPROPERTY(BlueprintReadOnly, Category = "Pivotable")
+	bool bIsBeingHeld = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable")
+	bool bCanClose = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Closing Details", meta = (EditCondition = "bCanClose"))
+	float ClosedStrength = 1000.000f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Closing Details", meta = (EditCondition = "bCanClose"))
+	bool bIsLocked = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Closing Details", meta = (EditCondition = "bCanClose"))
+	bool bIsClosed = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Closing Details", meta = (EditCondition = "bCanClose"))
+	float ClosedAngle = 5.0f;
 
 	TObjectPtr<UStaticMeshComponent> PivotableParentMeshComponent;
 	TObjectPtr<USceneComponent> HingeComponent;
+	TObjectPtr<UPhysicsConstraintComponent> PhysicsConstraintComponent;
 
 	void UpdateClosedState();
 };
