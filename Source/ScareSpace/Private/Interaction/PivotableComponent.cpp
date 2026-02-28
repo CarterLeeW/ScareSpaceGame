@@ -51,29 +51,32 @@ void UPivotableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 void UPivotableComponent::BeginPlay()
 {
-	Super::BeginPlay();
-	// Find the pivotable parent mesh component somewhere on this actor by name
+    Super::BeginPlay();
+    // Find the pivotable parent mesh component somewhere on this actor by name
     PivotableParentMeshComponent = Cast<UStaticMeshComponent>(GetOwner()->GetDefaultSubobjectByName(PivotableParentMeshName));
     if (!PivotableParentMeshComponent)
     {
         UE_LOG(LogInteraction, Warning, TEXT("PivotableComponent: Could not find PivotableParentMeshComponent with name %s on actor %s"), *PivotableParentMeshName.ToString(), *GetOwner()->GetName());
-	}
+    }
     // do same for hinge component
-	HingeComponent = Cast<USceneComponent>(GetOwner()->GetDefaultSubobjectByName(HingeComponentName));
+    HingeComponent = Cast<USceneComponent>(GetOwner()->GetDefaultSubobjectByName(HingeComponentName));
     if (!HingeComponent)
     {
         UE_LOG(LogInteraction, Warning, TEXT("PivotableComponent: Could not find HingeComponent with name %s on actor %s"), *HingeComponentName.ToString(), *GetOwner()->GetName());
-	}
-	PhysicsConstraintComponent = GetOwner()->GetComponentByClass<UPhysicsConstraintComponent>();
+    }
+    PhysicsConstraintComponent = GetOwner()->GetComponentByClass<UPhysicsConstraintComponent>();
     if (!PhysicsConstraintComponent)
     {
         UE_LOG(LogInteraction, Warning, TEXT("PivotableComponent: Could not find PhysicsConstraintComponent on actor %s"), *GetOwner()->GetName());
-	}
+    }
 
-	// Perform necessary default setup
-	BaseRotation = PivotableParentMeshComponent->GetComponentRotation();
-	HingeComponent->SetRelativeRotation(HingeStartingRotation);
-	PivotableParentMeshComponent->SetSimulatePhysics(true);
+    if (PivotableParentMeshComponent && HingeComponent)
+    {
+        // Perform necessary default setup
+        BaseRotation = PivotableParentMeshComponent->GetComponentRotation();
+        HingeComponent->SetRelativeRotation(HingeStartingRotation);
+        PivotableParentMeshComponent->SetSimulatePhysics(true);
+    }
 }
 
 void UPivotableComponent::UpdateClosedState()
