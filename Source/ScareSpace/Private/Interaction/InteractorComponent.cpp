@@ -71,43 +71,60 @@ void UInteractorComponent::BeginPlay()
 
 void UInteractorComponent::BeginInteraction()
 {
-	// No targets are in reach, OR player is currently interacting, so there can be no new interaction
 	if (!ReachableTargetHitResult.bBlockingHit || bIsInteracting)
 	{
 		return;
 	}
 
-	// Will be nullptr if none exists
-	CurrentInteractableComponent = ReachableTargetHitResult.GetActor()->GetComponentByClass<UInteractableComponent>();
-	// The actor has an interactable component
+	CurrentInteractableComponent = nullptr;
+
+	// Retrieve all interactable components on the target actor
+	TArray<UInteractableComponent*> Interactables;
+	ReachableTargetHitResult.GetActor()->GetComponents<UInteractableComponent>(Interactables);
+
+	// Determine which specific component matches the traced mesh
+	for (UInteractableComponent* Interactable : Interactables)
+	{
+		if (UPivotableComponent* Pivotable = Cast<UPivotableComponent>(Interactable))
+		{
+			// Verify if this pivotable component drives the exact mesh hit by the trace
+			if (IsChildOfPivotableComponent(ReachableTargetHitResult.GetComponent(), Pivotable))
+			{
+				CurrentInteractableComponent = Pivotable;
+				break;
+			}
+		}
+		else
+		{
+			// Fallback for singular interactables like Holdables or Collectables
+			CurrentInteractableComponent = Interactable;
+			break;
+		}
+	}
+
 	if (IsValid(CurrentInteractableComponent))
 	{
 		bIsInteracting = true;
-		// Start the interaction on the interactable component - will have different behavior depending on type
 		CurrentInteractableComponent->BeginInteraction();
 
-		/* Code related to input mappings and type of interaction */
 		switch (CurrentInteractableComponent->InteractableType)
 		{
 		case EInteractableType::Holdable:
 			BeginHolding();
 			break;
 		case EInteractableType::Collectable:
-			Collect(); // if mouse is held down, it continues to ask for interaction
+			Collect();
 			break;
 		case EInteractableType::Pivotable:
-			if (IsChildOfPivotableComponent(ReachableTargetHitResult.GetComponent()))
-			{
-				BeginPivoting();
-			}
+			BeginPivoting();
 			break;
 		default:
-			UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be found on %s"), *CurrentInteractableComponent->GetOwner()->GetName());
+			UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be handled on %s"), *CurrentInteractableComponent->GetOwner()->GetName());
 		}
 	}
 	else
 	{
-		UE_LOG(LogInteraction, Display, TEXT("No interactable actor"));
+		UE_LOG(LogInteraction, Display, TEXT("No valid interactable component matched the hit mesh"));
 	}
 }
 
@@ -424,28 +441,29 @@ void UInteractorComponent::Collect()
 	bIsInteracting = false;
 }
 
-bool UInteractorComponent::IsChildOfPivotableComponent(UPrimitiveComponent* TargetedComponent)
+bool UInteractorComponent::IsChildOfPivotableComponent(UPrimitiveComponent* TargetedComponent, UPivotableComponent* PivotableComp)
 {
-	UPivotableComponent* PivotableComp = Cast<UPivotableComponent>(CurrentInteractableComponent);
-	if (IsValid(PivotableComp))
+	if (!IsValid(PivotableComp) || !IsValid(PivotableComp->PivotableParentMeshComponent))
 	{
-		checkf(PivotableComp->PivotableParentMeshName != NAME_None, TEXT("PivotableComponent %s must have a valid PivotableParentMeshName!"), *PivotableComp->GetName());
-		if (TargetedComponent->GetName() == PivotableComp->PivotableParentMeshName)
+		return false;
+	}
+
+	// Direct memory address comparison
+	if (TargetedComponent == PivotableComp->PivotableParentMeshComponent)
+	{
+		return true;
+	}
+
+	TArray<USceneComponent*, FDefaultAllocator> Parents;
+	TargetedComponent->GetParentComponents(Parents);
+	for (USceneComponent* ParentComp : Parents)
+	{
+		if (ParentComp == PivotableComp->PivotableParentMeshComponent)
 		{
-			UE_LOG(LogInteraction, Display, TEXT("Component matched"));
 			return true;
 		}
-		TArray<USceneComponent*, FDefaultAllocator> Parents;
-		TargetedComponent->GetParentComponents(Parents);
-		for (USceneComponent* ParentComp : Parents)
-		{
-			if (ParentComp->GetName() == PivotableComp->PivotableParentMeshName)
-			{
-				UE_LOG(LogInteraction, Display, TEXT("Component matched"));
-				return true;
-			}
-		}
 	}
+
 	return false;
 }
 

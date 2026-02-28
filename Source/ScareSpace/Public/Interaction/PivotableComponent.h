@@ -7,10 +7,11 @@
 #include "PivotableComponent.generated.h"
 
 class UPhysicsConstraintComponent;
+class UStaticMeshComponent;
+class USceneComponent;
 
 /**
- * 
- */
+ * */
 UCLASS(ClassGroup = (Interactable), meta = (BlueprintSpawnableComponent))
 class SCARESPACE_API UPivotableComponent : public UInteractableComponent
 {
@@ -26,14 +27,16 @@ public:
 	virtual void EndInteraction() override;
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
-	// This is the highest component in the hierarchy that moves when pivoting
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Pivotable")
-	FName PivotableParentMeshName;
 
-	// This is the hinge for the pivoting motion
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable")
-	FName HingeComponentName;
+	// Explicit references to the specific components driving this pivotable object
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Components")
+	TObjectPtr<UStaticMeshComponent> PivotableParentMeshComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Components")
+	TObjectPtr<USceneComponent> HingeComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Components")
+	TObjectPtr<UPhysicsConstraintComponent> PhysicsConstraintComponent;
 
 	bool GetIsBeingHeld() const { return bIsBeingHeld; }
 	void SetIsBeingHeld(bool bNewIsBeingHeld) { bIsBeingHeld = bNewIsBeingHeld; }
@@ -52,7 +55,7 @@ protected:
 	FRotator HingeStartingRotation = FRotator::ZeroRotator;
 	FRotator BaseRotation;
 
-	// Should be set on the interactor when beginning to pivot
+	// Set on the interactor when beginning to pivot
 	UPROPERTY(BlueprintReadOnly, Category = "Pivotable")
 	bool bIsBeingHeld = false;
 
@@ -66,10 +69,6 @@ protected:
 	bool bIsClosed = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Closing Details", meta = (EditCondition = "bCanClose"))
 	float ClosedAngle = 5.0f;
-
-	TObjectPtr<UStaticMeshComponent> PivotableParentMeshComponent;
-	TObjectPtr<USceneComponent> HingeComponent;
-	TObjectPtr<UPhysicsConstraintComponent> PhysicsConstraintComponent;
 
 	void UpdateClosedState();
 };
