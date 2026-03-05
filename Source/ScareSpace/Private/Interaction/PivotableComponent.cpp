@@ -56,6 +56,27 @@ void UPivotableComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Retrieve all components attached to the owning actor
+	TArray<UActorComponent*> AllComponents;
+	GetOwner()->GetComponents(AllComponents);
+
+	// Iterate through and match the FNames
+	for (UActorComponent* Comp : AllComponents)
+	{
+		if (Comp->GetFName() == PivotableParentMeshName)
+		{
+			PivotableParentMeshComponent = Cast<UStaticMeshComponent>(Comp);
+		}
+		else if (Comp->GetFName() == HingeComponentName)
+		{
+			HingeComponent = Cast<USceneComponent>(Comp);
+		}
+		else if (Comp->GetFName() == PhysicsConstraintName)
+		{
+			PhysicsConstraintComponent = Cast<UPhysicsConstraintComponent>(Comp);
+		}
+	}
+
 	// Validate pointers assigned in the editor to prevent dereferencing null
 	if (!PivotableParentMeshComponent)
 	{
@@ -72,9 +93,16 @@ void UPivotableComponent::BeginPlay()
 
 	if (PivotableParentMeshComponent && HingeComponent)
 	{
-		BaseRotation = PivotableParentMeshComponent->GetRelativeRotation();
+		BaseRotation = PivotableParentMeshComponent->GetComponentRotation();
 		HingeComponent->SetRelativeRotation(HingeStartingRotation);
 		PivotableParentMeshComponent->SetSimulatePhysics(true);
+	}
+	// Prevents locking a door that shouldn't close and ensures the door can always swing
+	if (!bCanClose && PhysicsConstraintComponent)
+	{
+		PhysicsConstraintComponent->SetAngularDriveParams(0.0f, 0.0f, 0.0f);
+		bIsClosed = false;
+		bIsLocked = false;
 	}
 }
 
@@ -85,7 +113,7 @@ void UPivotableComponent::UpdateClosedState()
 		return;
 	}
 
-	FRotator DeltaRotator = PivotableParentMeshComponent->GetRelativeRotation() - BaseRotation;
+	FRotator DeltaRotator = PivotableParentMeshComponent->GetComponentRotation() - BaseRotation;
 	DeltaRotator.Normalize();
 
 	float YawAngle = FMath::Abs(DeltaRotator.Yaw);

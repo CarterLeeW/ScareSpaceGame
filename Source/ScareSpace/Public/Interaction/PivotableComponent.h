@@ -23,20 +23,25 @@ public:
 	// Called when interaction is set to begin
 	virtual void BeginInteraction() override;
 
+	// Enter the exact name of the components as they appear in the Blueprint hierarchy
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Components")
+	FName PivotableParentMeshName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Components")
+	FName HingeComponentName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Components")
+	FName PhysicsConstraintName;
+	// Resolved pointers accessed by the Interactor Component at runtime
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "Pivotable|Components")
+	TObjectPtr<UStaticMeshComponent> PivotableParentMeshComponent;
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "Pivotable|Components")
+	TObjectPtr<USceneComponent> HingeComponent;
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "Pivotable|Components")
+	TObjectPtr<UPhysicsConstraintComponent> PhysicsConstraintComponent;
+
 	// Called when interaction is set to end
 	virtual void EndInteraction() override;
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	// Explicit references to the specific components driving this pivotable object
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Components")
-	TObjectPtr<UStaticMeshComponent> PivotableParentMeshComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Components")
-	TObjectPtr<USceneComponent> HingeComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Components")
-	TObjectPtr<UPhysicsConstraintComponent> PhysicsConstraintComponent;
 
 	bool GetIsBeingHeld() const { return bIsBeingHeld; }
 	void SetIsBeingHeld(bool bNewIsBeingHeld) { bIsBeingHeld = bNewIsBeingHeld; }
