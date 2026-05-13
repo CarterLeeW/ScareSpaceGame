@@ -43,6 +43,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputAction> UnCrouchAction;
 
+	/** Sprint Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UInputAction> SprintAction;
+
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputAction> LookAction;
@@ -86,6 +90,10 @@ protected:
 	/** Called for crouching input */
 	void CrouchImplementation();
 	void UnCrouchImplementation();
+
+	/** Called for sprinting */
+	void StartSprinting();
+	void StopSprinting();
 
 	/* End Inputs */
 

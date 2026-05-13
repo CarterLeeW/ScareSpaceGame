@@ -130,6 +130,14 @@ void AMainPlayerController::UnCrouchImplementation()
 	}
 }
 
+void AMainPlayerController::StartSprinting()
+{
+}
+
+void AMainPlayerController::StopSprinting()
+{
+}
+
 void AMainPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -157,6 +165,10 @@ void AMainPlayerController::SetupInputComponent()
 		// Crouching
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AMainPlayerController::CrouchImplementation);
 		EnhancedInputComponent->BindAction(UnCrouchAction, ETriggerEvent::Started, this, &AMainPlayerController::UnCrouchImplementation);
+
+		// Sprinting
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AMainPlayerController::StartSprinting);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMainPlayerController::StopSprinting);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMainPlayerController::Move);
