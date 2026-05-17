@@ -130,18 +130,31 @@ void AMainPlayerController::UnCrouchImplementation()
 	}
 }
 
+// Start sprinting - would be nice to extend the character movement component but that's too much for now
 void AMainPlayerController::StartSprinting()
 {
+	if (PlayerCharacter->GetCharacterMovement() && !bIsSprinting)
+	{
+		PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed * 1.7f;
+		PlayerCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = BaseWalkSpeedCrouched * 1.7f;
+		bIsSprinting = true;
+	}
 }
 
 void AMainPlayerController::StopSprinting()
 {
+	if (PlayerCharacter->GetCharacterMovement())
+	{
+		PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+		PlayerCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = BaseWalkSpeedCrouched;
+		bIsSprinting = false;
+	}
 }
 
 void AMainPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	// get the enhanced input subsystem
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
@@ -150,6 +163,11 @@ void AMainPlayerController::BeginPlay()
 	}
 
 	PlayerCharacter = Cast<APlayerCharacter>(GetCharacter());
+	if (PlayerCharacter && PlayerCharacter->GetCharacterMovement())
+	{
+		BaseWalkSpeed = PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed;
+		BaseWalkSpeedCrouched = PlayerCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched;
+	}
 }
 
 void AMainPlayerController::SetupInputComponent()

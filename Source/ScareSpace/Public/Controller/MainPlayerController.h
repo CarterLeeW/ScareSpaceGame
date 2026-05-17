@@ -94,6 +94,9 @@ protected:
 	/** Called for sprinting */
 	void StartSprinting();
 	void StopSprinting();
+	bool bIsSprinting;
+	float BaseWalkSpeed;
+	float BaseWalkSpeedCrouched;
 
 	/* End Inputs */
 
