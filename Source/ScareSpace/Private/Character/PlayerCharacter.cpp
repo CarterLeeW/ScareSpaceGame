@@ -53,19 +53,3 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 }
-
-void APlayerCharacter::StartSprinting()
-{
-	if (GetCharacterMovement())
-	{
-		// Double speed but do more checks first
-	}
-}
-
-void APlayerCharacter::StopSprinting()
-{
-	if (GetCharacterMovement())
-	{
-		// reset speed to normal but do more checks first
-	}
-}

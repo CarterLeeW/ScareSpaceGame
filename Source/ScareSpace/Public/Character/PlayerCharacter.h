@@ -39,9 +39,6 @@ public:
 	// Returns InventoryComponent
 	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 
-	void StartSprinting();
-	void StopSprinting();
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
