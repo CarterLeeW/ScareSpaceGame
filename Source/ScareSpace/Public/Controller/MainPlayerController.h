@@ -97,6 +97,8 @@ protected:
 	bool bIsSprinting;
 	float BaseWalkSpeed;
 	float BaseWalkSpeedCrouched;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	float SprintMultiplier = 2.0f;
 
 	/* End Inputs */
 
