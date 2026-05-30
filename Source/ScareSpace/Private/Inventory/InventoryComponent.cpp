@@ -106,6 +106,15 @@ bool UInventoryComponent::RemoveItemFromInventory(FName ItemName)
 	return false;
 }
 
+void UInventoryComponent::SelectItemByRowName(FName RowName)
+{
+}
+
+FItemData* UInventoryComponent::GetItemData(FName RowName) const
+{
+	return nullptr;
+}
+
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();

@@ -10,9 +10,12 @@ class UInputMappingContext;
 class UInputAction;
 class UUserWidget;
 class AMainPlayerController;
+struct FItemData;
 
 // Define the event signature. It will send the complete set of item names.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryUpdatedSignature, const TSet<FName>&, NewItemSet);
+// This event will be used for when an item is selected in the inventory widget. It will send the name of the selected item.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemSelected, FName, SelectedItem);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SCARESPACE_API UInventoryComponent : public UActorComponent
@@ -71,6 +74,16 @@ public:
 	// The controller that owns this interactor component
 	TObjectPtr<AMainPlayerController> ThisController;
 
+	UPROPERTY(BlueprintAssignable, Category = "Inventory|Events")
+	FOnItemSelected OnItemSelected;
+
+	// Call this when UI selection changes, passing the Row Name from your Inventory Table
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SelectItemByRowName(FName RowName);
+
+	// Helper to let other systems fetch data safely
+	FItemData* GetItemData(FName RowName) const;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -97,4 +110,7 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	bool bIsInventoryOpen = false;
+
+private:
+	FName CurrentSelectedRowName;
 };
