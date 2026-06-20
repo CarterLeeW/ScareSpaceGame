@@ -13,6 +13,7 @@ class UInputAction;
 class UInteractableComponent;
 class UPhysicsHandleComponent;
 class UPivotableComponent;
+class UInventoryComponent;
 struct FInputActionValue;
 
 UCLASS( ClassGroup=(Interacting), meta=(BlueprintSpawnableComponent) )
@@ -100,6 +101,9 @@ protected:
 	/* For pushing objects that are being pivoted */
 	void PushObject();
 
+	UFUNCTION()
+	void HandleOnItemSelected(FName SelectedItemRowName);
+
 private:
 	/**
 	* Performs a single trace along the visibility channel for objects that are within arms length of the character
@@ -147,4 +151,8 @@ private:
 
 	// Track the last icon to prevent spamming updates
 	TWeakObjectPtr<UTexture2D> LastInteractionIcon = nullptr;
+
+	TObjectPtr<UInventoryComponent> InventoryComponent;
+	// Lightweight tracker for what row identifier is active
+	FName ActiveHandItemRowName;
 };

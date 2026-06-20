@@ -108,11 +108,27 @@ bool UInventoryComponent::RemoveItemFromInventory(FName ItemName)
 
 void UInventoryComponent::SelectItemByRowName(FName RowName)
 {
+	if (!IsValid(ItemDatabase))
+	{
+		return;
+	}
+
+	if (ItemDatabase->FindRow<FItemData>(RowName, TEXT("Selection Validation")))
+	{
+		CurrentSelectedRowName = RowName;
+		OnItemSelected.Broadcast(CurrentSelectedRowName);
+	}
 }
 
 FItemData* UInventoryComponent::GetItemData(FName RowName) const
 {
-	return nullptr;
+	if (!IsValid(ItemDatabase) || RowName.IsNone())
+	{
+		return nullptr;
+	}
+
+	// Returns a direct pointer to the Data Table memory row
+	return ItemDatabase->FindRow<FItemData>(RowName, TEXT("Item Data Lookup"));
 }
 
 void UInventoryComponent::BeginPlay()

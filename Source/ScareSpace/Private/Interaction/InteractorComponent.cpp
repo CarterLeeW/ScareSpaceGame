@@ -13,6 +13,7 @@
 #include "Interaction/CollectableComponent.h"
 #include "Interaction/PivotableComponent.h"
 #include "InputActionValue.h"
+#include "ItemStructs.h"
 
 UInteractorComponent::UInteractorComponent()
 {
@@ -43,8 +44,14 @@ void UInteractorComponent::BeginPlay()
 
 	ThisCharacter = Cast<ACharacter>(GetOwner());
 	checkf(ThisCharacter, TEXT("InteractorComponent must be attached to a Character!"));
+
 	ThisController = Cast<APlayerController>(ThisCharacter->GetController());
 	checkf(ThisController, TEXT("InteractorComponent must be attached to a Character with a PlayerController!"));
+
+	// Discover and bind event for InventoryComponent on the character
+	InventoryComponent = ThisCharacter->FindComponentByClass<UInventoryComponent>();
+	checkf(InventoryComponent, TEXT("InteractorComponent requires an InventoryComponent on the Character!"));
+	InventoryComponent->OnItemSelected.AddDynamic(this, &UInteractorComponent::HandleOnItemSelected);
 
 	// Bind Interactor input actions to the controller
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
@@ -230,6 +237,20 @@ void UInteractorComponent::ThrowObject()
 void UInteractorComponent::PushObject()
 {
 
+}
+
+void UInteractorComponent::HandleOnItemSelected(FName SelectedItemRowName)
+{
+	ActiveHandItemRowName = SelectedItemRowName;
+
+	// Debug display
+	if (InventoryComponent)
+	{
+		if (FItemData* Data = InventoryComponent->GetItemData(ActiveHandItemRowName))
+		{
+			UE_LOG(LogTemp, Log, TEXT("Interactor holding: %s"), *Data->ItemDisplayName.ToString());
+		}
+	}
 }
 
 void UInteractorComponent::ArmsLengthTrace(FHitResult& OutResult)
