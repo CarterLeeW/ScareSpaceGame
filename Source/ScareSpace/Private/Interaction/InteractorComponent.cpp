@@ -246,10 +246,9 @@ void UInteractorComponent::HandleOnItemSelected(FName SelectedItemRowName)
 	// Debug display
 	if (InventoryComponent)
 	{
-		if (FItemData* Data = InventoryComponent->GetItemData(ActiveHandItemRowName))
-		{
-			UE_LOG(LogTemp, Log, TEXT("Interactor holding: %s"), *Data->ItemDisplayName.ToString());
-		}
+		FItemData Data;
+		InventoryComponent->GetItemData(SelectedItemRowName, Data);
+		UE_LOG(LogInteraction, Log, TEXT("Interactor holding: %s"), *Data.ItemDisplayName.ToString());
 	}
 }
 

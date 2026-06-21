@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "ItemStructs.h"
 #include "InventoryComponent.generated.h"
 
 class UInputMappingContext;
@@ -74,6 +75,7 @@ public:
 	// The controller that owns this interactor component
 	TObjectPtr<AMainPlayerController> ThisController;
 
+	// Allows communication with the interactor component and with the inventory widget
 	UPROPERTY(BlueprintAssignable, Category = "Inventory|Events")
 	FOnItemSelected OnItemSelected;
 
@@ -82,7 +84,8 @@ public:
 	void SelectItemByRowName(FName RowName);
 
 	// Helper to let other systems fetch data safely
-	FItemData* GetItemData(FName RowName) const;
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void GetItemData(FName RowName, UPARAM(ref) FItemData& OutItemData);
 
 protected:
 	virtual void BeginPlay() override;

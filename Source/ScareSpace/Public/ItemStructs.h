@@ -26,5 +26,5 @@ struct FItemData : public FTableRowBase
 	FText ItemDescription;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Cosmetic")
-	TSoftObjectPtr<UTexture2D> ItemIcon;
+	TObjectPtr<UTexture2D> ItemIcon;
 };
