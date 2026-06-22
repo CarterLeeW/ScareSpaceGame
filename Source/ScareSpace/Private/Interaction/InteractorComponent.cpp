@@ -79,8 +79,6 @@ void UInteractorComponent::BeginPlay()
 void UInteractorComponent::BeginInteraction()
 {
 	// If we are holding an item from the inventory, then we want to interact with it using that item instead of in the usual way
-	
-
 
 	if (!ReachableTargetHitResult.bBlockingHit || bIsInteracting)
 	{
@@ -247,14 +245,17 @@ void UInteractorComponent::HandleOnItemSelected(FName SelectedItemRowName)
 {
 	ActiveHandItemRowName = SelectedItemRowName;
 
-	// Debug display
-	if (InventoryComponent)
-	{
-		FItemData Data;
-		InventoryComponent->GetItemData(SelectedItemRowName, Data);
-		UE_LOG(LogInteraction, Log, TEXT("Interactor holding: %s"), *Data.ItemDisplayName.ToString());
+	// Reset cached icon
+	CachedActiveItemIcon = nullptr;
 
-		
+	if (InventoryComponent && ActiveHandItemRowName != NAME_None)
+	{
+		FItemData SelectedItemData;
+		if (InventoryComponent->GetItemData(SelectedItemRowName, SelectedItemData))
+		{
+			CachedActiveItemIcon = SelectedItemData.ItemIcon;
+			UE_LOG(LogInteraction, Display, TEXT("Selected item: %s"), *SelectedItemRowName.ToString());
+		}
 	}
 }
 
@@ -499,8 +500,11 @@ void UInteractorComponent::UpdateInteractionPrompt()
 	UTexture2D* CurrentIcon = nullptr;
 
 
-
-	if (!bIsInteracting && ReachableTargetHitResult.bBlockingHit)
+	if (CachedActiveItemIcon)
+	{
+		CurrentIcon = CachedActiveItemIcon;
+	}
+	else if (!bIsInteracting && ReachableTargetHitResult.bBlockingHit)
 	{
 		if (UInteractableComponent* HitInteractable = ReachableTargetHitResult.GetActor()->GetComponentByClass<UInteractableComponent>())
 		{
@@ -511,7 +515,6 @@ void UInteractorComponent::UpdateInteractionPrompt()
 	if (CurrentIcon != LastInteractionIcon.Get())
 	{
 		LastInteractionIcon = CurrentIcon;
-
 		// Pass the texture to the UI
 		OnInteractionIconChanged.Broadcast(CurrentIcon);
 	}

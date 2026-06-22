@@ -155,4 +155,6 @@ private:
 	TObjectPtr<UInventoryComponent> InventoryComponent;
 	// Lightweight tracker for what row identifier is active
 	FName ActiveHandItemRowName;
+
+	TObjectPtr<UTexture2D> CachedActiveItemIcon = nullptr;
 };

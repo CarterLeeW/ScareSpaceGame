@@ -121,22 +121,22 @@ void UInventoryComponent::SelectItemByRowName(FName RowName)
 	}
 }
 
-void UInventoryComponent::GetItemData(FName RowName, FItemData& OutItemData)
+bool UInventoryComponent::GetItemData(FName RowName, FItemData& OutItemData)
 {
 	if (!IsValid(ItemDatabase) || RowName.IsNone())
 	{
 		UE_LOG(LogInventory, Error, TEXT("Cannot get item data"));
-		return;
+		return false;
 	}
 
 	// Returns a direct pointer to the Data Table memory row
 	if (FItemData* FoundItem = ItemDatabase->FindRow<FItemData>(RowName, TEXT("Item Data Lookup")))
 	{
 		OutItemData = *FoundItem;
-		return;
+		return true;
 	}
 	UE_LOG(LogInventory, Error, TEXT("Cannot get item data"));
-	return;
+	return false;
 }
 
 void UInventoryComponent::BeginPlay()

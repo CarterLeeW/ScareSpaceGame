@@ -85,7 +85,7 @@ public:
 
 	// Helper to let other systems fetch data safely
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void GetItemData(FName RowName, UPARAM(ref) FItemData& OutItemData);
+	bool GetItemData(FName RowName, UPARAM(ref) FItemData& OutItemData);
 
 protected:
 	virtual void BeginPlay() override;
