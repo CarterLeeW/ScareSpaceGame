@@ -117,6 +117,7 @@ void UInventoryComponent::SelectItemByRowName(FName RowName)
 	{
 		CurrentSelectedRowName = RowName;
 		OnItemSelected.Broadcast(CurrentSelectedRowName);
+		ToggleInventoryMenu(); // Returns us back to the gameplay input mode, and closes the inventory menu
 	}
 }
 
@@ -187,6 +188,7 @@ void UInventoryComponent::OpenInventoryMenu()
 		InputModeData.SetWidgetToFocus(InventoryWidgetInstance->TakeWidget());
 		ThisController->SetInputMode(InputModeData);
 		ThisController->bShowMouseCursor = true;
+		// Can I center cursor in UI?
 		bIsInventoryOpen = true;
 	}
 }

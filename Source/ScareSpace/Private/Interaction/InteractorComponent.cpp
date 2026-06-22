@@ -78,6 +78,10 @@ void UInteractorComponent::BeginPlay()
 
 void UInteractorComponent::BeginInteraction()
 {
+	// If we are holding an item from the inventory, then we want to interact with it using that item instead of in the usual way
+	
+
+
 	if (!ReachableTargetHitResult.bBlockingHit || bIsInteracting)
 	{
 		return;
@@ -249,6 +253,8 @@ void UInteractorComponent::HandleOnItemSelected(FName SelectedItemRowName)
 		FItemData Data;
 		InventoryComponent->GetItemData(SelectedItemRowName, Data);
 		UE_LOG(LogInteraction, Log, TEXT("Interactor holding: %s"), *Data.ItemDisplayName.ToString());
+
+		
 	}
 }
 
@@ -489,8 +495,11 @@ bool UInteractorComponent::IsChildOfPivotableComponent(UPrimitiveComponent* Targ
 
 void UInteractorComponent::UpdateInteractionPrompt()
 {
-	// display interaction icon change
+	// display interaction icon change - need to also consider if we are holding something from the inventory like a key
 	UTexture2D* CurrentIcon = nullptr;
+
+
+
 	if (!bIsInteracting && ReachableTargetHitResult.bBlockingHit)
 	{
 		if (UInteractableComponent* HitInteractable = ReachableTargetHitResult.GetActor()->GetComponentByClass<UInteractableComponent>())
