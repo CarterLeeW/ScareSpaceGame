@@ -16,7 +16,7 @@ struct FItemData;
 // Define the event signature. It will send the complete set of item names.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryUpdatedSignature, const TSet<FName>&, NewItemSet);
 // This event will be used for when an item is selected in the inventory widget. It will send the name of the selected item.
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemSelected, FName, SelectedItem);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemSelected, FDataTableRowHandle, SelectedItem);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SCARESPACE_API UInventoryComponent : public UActorComponent
@@ -115,5 +115,5 @@ protected:
 	bool bIsInventoryOpen = false;
 
 private:
-	FName CurrentSelectedRowName;
+	FDataTableRowHandle CurrentSelectedRow;
 };

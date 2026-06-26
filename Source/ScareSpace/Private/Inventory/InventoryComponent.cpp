@@ -115,8 +115,10 @@ void UInventoryComponent::SelectItemByRowName(FName RowName)
 
 	if (ItemDatabase->FindRow<FItemData>(RowName, TEXT("Selection Validation")))
 	{
-		CurrentSelectedRowName = RowName;
-		OnItemSelected.Broadcast(CurrentSelectedRowName);
+		CurrentSelectedRow = FDataTableRowHandle();
+		CurrentSelectedRow.DataTable = ItemDatabase;
+		CurrentSelectedRow.RowName = RowName;
+		OnItemSelected.Broadcast(CurrentSelectedRow);
 		ToggleInventoryMenu(); // Returns us back to the gameplay input mode, and closes the inventory menu
 	}
 }

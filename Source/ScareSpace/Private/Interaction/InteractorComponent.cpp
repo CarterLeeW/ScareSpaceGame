@@ -78,7 +78,6 @@ void UInteractorComponent::BeginPlay()
 
 void UInteractorComponent::BeginInteraction()
 {
-	// If we are holding an item from the inventory, then we want to interact with it using that item instead of in the usual way
 
 	if (!ReachableTargetHitResult.bBlockingHit || bIsInteracting)
 	{
@@ -111,6 +110,23 @@ void UInteractorComponent::BeginInteraction()
 		}
 	}
 
+	// If we are holding an item from the inventory, then we want to interact with it using that item instead of in the usual way
+	// This runs when clicking anywhere after selecting item from inventory
+	if (bHoldingItem)
+	{
+		if (IsValid(CurrentInteractableComponent) && CurrentInteractableComponent->QuickValidateItemInteraction(ActiveHeldItemRow))
+		{
+			UE_LOG(LogInteraction, Display, TEXT("We found a match!"));
+			// If the interactable component is valid, we can attempt to interact with it using the held item
+			return;
+		}
+		// Fallback
+		// Do stuff like unholding the item or displaying a message like "nothing to interact with"
+		UE_LOG(LogInteraction, Display, TEXT("No match! Should put item back"));
+
+		return;
+	}
+
 	if (IsValid(CurrentInteractableComponent))
 	{
 		bIsInteracting = true;
@@ -126,6 +142,9 @@ void UInteractorComponent::BeginInteraction()
 			break;
 		case EInteractableType::Pivotable:
 			BeginPivoting();
+			break;
+		case EInteractableType::ItemOnly:
+			UE_LOG(LogInteraction, Display, TEXT("%s has a basic item-only interactable component and requires an item to interact with"), *CurrentInteractableComponent->GetOwner()->GetName());
 			break;
 		default:
 			UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be handled on %s"), *CurrentInteractableComponent->GetOwner()->GetName());
@@ -241,22 +260,27 @@ void UInteractorComponent::PushObject()
 
 }
 
-void UInteractorComponent::HandleOnItemSelected(FName SelectedItemRowName)
+void UInteractorComponent::HandleOnItemSelected(FDataTableRowHandle SelectedItemRow)
 {
-	ActiveHandItemRowName = SelectedItemRowName;
-
-	// Reset cached icon
+	ActiveHeldItemRow = SelectedItemRow;
 	CachedActiveItemIcon = nullptr;
+	bHoldingItem = !ActiveHeldItemRow.IsNull();
 
-	if (InventoryComponent && ActiveHandItemRowName != NAME_None)
+	if (bHoldingItem)
 	{
-		FItemData SelectedItemData;
-		if (InventoryComponent->GetItemData(SelectedItemRowName, SelectedItemData))
+		if (FItemData* RowData = ActiveHeldItemRow.GetRow<FItemData>(TEXT("Interactor Context")))
 		{
-			CachedActiveItemIcon = SelectedItemData.ItemIcon;
-			UE_LOG(LogInteraction, Display, TEXT("Selected item: %s"), *SelectedItemRowName.ToString());
+			CachedActiveItemIcon = RowData->ItemIcon;
+		}
+		else
+		{
+			// Security fallback if the handle points to an incompatible row struct type
+			UE_LOG(LogInteraction, Error, TEXT("ActiveHeldItemRow points to a data table that does not use FItemData struct format!"));
+			bHoldingItem = false;
 		}
 	}
+
+	UpdateInteractionPrompt();
 }
 
 void UInteractorComponent::ArmsLengthTrace(FHitResult& OutResult)
@@ -500,8 +524,9 @@ void UInteractorComponent::UpdateInteractionPrompt()
 	UTexture2D* CurrentIcon = nullptr;
 
 
-	if (CachedActiveItemIcon)
+	if (CachedActiveItemIcon && bHoldingItem)
 	{
+		// TODO: Can we make the icon flash if we are in range?
 		CurrentIcon = CachedActiveItemIcon;
 	}
 	else if (!bIsInteracting && ReachableTargetHitResult.bBlockingHit)

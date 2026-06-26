@@ -102,7 +102,7 @@ protected:
 	void PushObject();
 
 	UFUNCTION()
-	void HandleOnItemSelected(FName SelectedItemRowName);
+	void HandleOnItemSelected(FDataTableRowHandle SelectedItemRow);
 
 private:
 	/**
@@ -154,7 +154,8 @@ private:
 
 	TObjectPtr<UInventoryComponent> InventoryComponent;
 	// Lightweight tracker for what row identifier is active
-	FName ActiveHandItemRowName;
+	FDataTableRowHandle ActiveHeldItemRow;
 
 	TObjectPtr<UTexture2D> CachedActiveItemIcon = nullptr;
+	bool bHoldingItem = false;
 };
