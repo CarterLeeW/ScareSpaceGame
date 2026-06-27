@@ -52,7 +52,7 @@ public:
 	float GetClosedAngle() const { return ClosedAngle; }
 	FRotator GetBaseRotation() const { return BaseRotation; }
 
-	virtual bool TryInteractWithItem(FDataTableRowHandle ItemRow) override;
+	virtual bool TryInteractWithItem(FDataTableRowHandle CollectableItemRow) override;
 protected:
 	virtual void BeginPlay() override;
 

@@ -14,7 +14,7 @@ class AMainPlayerController;
 struct FItemData;
 
 // Define the event signature. It will send the complete set of item names.
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryUpdatedSignature, const TSet<FName>&, NewItemSet);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryUpdatedSignature, const TArray<FDataTableRowHandle>&, NewItemSet);
 // This event will be used for when an item is selected in the inventory widget. It will send the name of the selected item.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemSelected, FDataTableRowHandle, SelectedItem);
 
@@ -59,15 +59,14 @@ public:
 	/* End Input */
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool AddItemToInventory(FName ItemName);
+	bool AddItemToInventory(FDataTableRowHandle CollectableItemRow);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool RemoveItemFromInventory(FName ItemName);
+	bool RemoveItemFromInventory(FDataTableRowHandle CollectableItemRow);
 
 	// Returns current set of inventory items
 	UFUNCTION(BlueprintPure, Category = "Inventory")
-	TSet<FName> GetInventoryItems() const { return InventoryItems; }
-
+	TArray<FDataTableRowHandle> GetInventoryItems() const { return InventoryItems; }
 	// This is the event the widget will bind to in order to update the inventory display
 	UPROPERTY(BlueprintAssignable, Category = "Inventory|Events")
 	FOnInventoryUpdatedSignature OnInventoryUpdated;
@@ -81,14 +80,14 @@ public:
 
 	// Call this when UI selection changes, passing the Row Name from your Inventory Table
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void SelectItemByRowName(FName RowName);
+	void SelectItemByRowName(FDataTableRowHandle CollectableItemRow);
 
 	// Helper to let other systems fetch data safely
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool GetItemData(FName RowName, UPARAM(ref) FItemData& OutItemData);
+	bool GetItemData(FDataTableRowHandle CollectableItemRow, UPARAM(ref) FItemData& OutItemData);
 
 	// Item used and we can take it out of the inventory
-	void ConsumeItem(FDataTableRowHandle ItemRow);
+	void ConsumeItem(FDataTableRowHandle CollectableItemRow);
 
 protected:
 	virtual void BeginPlay() override;
@@ -100,7 +99,7 @@ protected:
 	void CloseInventoryMenu();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
-	TSet<FName> InventoryItems;
+	TArray<FDataTableRowHandle> InventoryItems;
 
 	//This is the main database of all items.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
@@ -117,6 +116,4 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	bool bIsInventoryOpen = false;
 
-private:
-	FDataTableRowHandle CurrentSelectedRow;
 };

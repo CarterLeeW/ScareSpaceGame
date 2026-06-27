@@ -41,11 +41,11 @@ public:
 	virtual void EndInteraction();
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool QuickValidateItemInteraction(FDataTableRowHandle ItemRow);
+	virtual bool QuickValidateItemInteraction(FDataTableRowHandle CollectableItemRow);
 
 	// Called when an interaction is performed with an item
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
-	virtual bool TryInteractWithItem(FDataTableRowHandle ItemRow);
+	virtual bool TryInteractWithItem(FDataTableRowHandle CollectableItemRow);
 
 	// Not used anywhere currently
 	OnInteractionEnded InteractionEnded;

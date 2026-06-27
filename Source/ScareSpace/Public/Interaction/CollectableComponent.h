@@ -22,11 +22,11 @@ public:
 
 
 	UFUNCTION(BlueprintPure)
-	FName GetItemName() const { return ItemName; }
+	FDataTableRowHandle GetItemRow() const { return CollectableItemRow; }
 
 private:
-	// Name of the item - used for lookup
+	// Item row that this collectable represents. This is used to determine what item is being collected when the player interacts with it.
 	UPROPERTY(EditDefaultsOnly, Category = "Collectable")
-	FName ItemName;
+	FDataTableRowHandle CollectableItemRow;
 	
 };

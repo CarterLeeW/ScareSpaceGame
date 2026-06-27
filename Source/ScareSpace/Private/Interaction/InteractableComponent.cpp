@@ -19,14 +19,14 @@ void UInteractableComponent::EndInteraction()
 	//UE_LOG(LogTemp, Display, TEXT("End interaction Base Implementation"));
 }
 
-bool UInteractableComponent::QuickValidateItemInteraction(FDataTableRowHandle ItemRow)
+bool UInteractableComponent::QuickValidateItemInteraction(FDataTableRowHandle CollectableItemRow)
 {
 	// No items can interact with this component
 	if (InteractableItem.IsNull())
 	{
 		return false;
 	}
-	else if (InteractableItem == ItemRow)
+	else if (InteractableItem == CollectableItemRow)
 	{
 		return true;
 	}
@@ -34,10 +34,10 @@ bool UInteractableComponent::QuickValidateItemInteraction(FDataTableRowHandle It
 }
 
 // Need to make sure this returns true before taking item out of inventory
-bool UInteractableComponent::TryInteractWithItem(FDataTableRowHandle ItemRow)
+bool UInteractableComponent::TryInteractWithItem(FDataTableRowHandle CollectableItemRow)
 {
 	// Default behavior: check if the item matches the requirement
-	if (!InteractableItem.IsNull() && ItemRow == InteractableItem)
+	if (!InteractableItem.IsNull() && CollectableItemRow == InteractableItem)
 	{
 		// Do stuff like unlocking
 		return true;

@@ -497,14 +497,14 @@ void UInteractorComponent::Collect()
 			if (UCollectableComponent* CollectableComp = Cast<UCollectableComponent>(CurrentInteractableComponent))
 			{
 				// Get name of item from the collectible component and add to inventory
-				if (InventoryComp->AddItemToInventory(CollectableComp->GetItemName()))
+				if (InventoryComp->AddItemToInventory(CollectableComp->GetItemRow()))
 				{
 					CollectableComp->GetOwner()->Destroy();
-					UE_LOG(LogInteraction, Display, TEXT("Successfully added %s to inventory"), *CollectableComp->GetItemName().ToString());
+					UE_LOG(LogInteraction, Display, TEXT("Successfully added %s to inventory"), *CollectableComp->GetItemRow().RowName.ToString());
 				}
 				else
 				{
-					UE_LOG(LogInteraction, Warning, TEXT("Could not add %s to inventory"), *CollectableComp->GetItemName().ToString());
+					UE_LOG(LogInteraction, Warning, TEXT("Could not add %s to inventory"), *CollectableComp->GetItemRow().RowName.ToString());
 				}
 			}
 		}

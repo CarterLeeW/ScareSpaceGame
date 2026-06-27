@@ -52,10 +52,10 @@ void UPivotableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	}
 }
 
-bool UPivotableComponent::TryInteractWithItem(FDataTableRowHandle ItemRow)
+bool UPivotableComponent::TryInteractWithItem(FDataTableRowHandle CollectableItemRow)
 {
 	// Default behavior: check if the item matches the requirement
-	if (!InteractableItem.IsNull() && ItemRow == InteractableItem)
+	if (!InteractableItem.IsNull() && CollectableItemRow == InteractableItem)
 	{
 		if (bIsLocked)
 		{

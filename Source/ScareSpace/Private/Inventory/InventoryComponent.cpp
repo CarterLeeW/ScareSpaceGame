@@ -54,87 +54,90 @@ void UInventoryComponent::ToggleInventoryMenu()
 	}
 }
 
-bool UInventoryComponent::AddItemToInventory(FName ItemName)
+bool UInventoryComponent::AddItemToInventory(FDataTableRowHandle CollectableItemRow)
 {
 	// there are no duplicate items in the game
 	// all are key items
 	if (ItemDatabase)
 	{
 		// does item exist in database?
-		if (FItemData* FoundItem = ItemDatabase->FindRow<FItemData>(ItemName, TEXT("Looking up item in database")))
+		if (FItemData* FoundItem = CollectableItemRow.GetRow<FItemData>(TEXT("InventoryComponent add item to inventory")))
 		{
 			// is item not already in our inventory? Should never be false since no duplicates allowed
-			if (!InventoryItems.Contains(ItemName))
+			if (!InventoryItems.Contains(CollectableItemRow))
 			{
-				InventoryItems.Add(ItemName);
-				UE_LOG(LogInventory, Display, TEXT("Adding %s to inventory"), *ItemName.ToString());
+				InventoryItems.Add(CollectableItemRow);
+				UE_LOG(LogInventory, Display, TEXT("Adding %s to inventory"), *CollectableItemRow.RowName.ToString());
 				OnInventoryUpdated.Broadcast(InventoryItems);
 				// List inventory items for debugging
-				for (const FName& InventoryItem : InventoryItems)
+				for (const FDataTableRowHandle& InventoryItem : InventoryItems)
 				{
-					UE_LOG(LogInventory, Display, TEXT("Current Inventory Item: %s"), *InventoryItem.ToString());
+					UE_LOG(LogInventory, Display, TEXT("Current Inventory Item: %s"), *InventoryItem.RowName.ToString());
 				}
 				return true;
 			}
-			UE_LOG(LogInventory, Warning, TEXT("%s is already in the player's inventory"), *ItemName.ToString());
+			UE_LOG(LogInventory, Warning, TEXT("%s is already in the player's inventory"), *CollectableItemRow.RowName.ToString());
 		}
-		UE_LOG(LogInventory, Warning, TEXT("Item name: %s does not exist in the database"), *ItemName.ToString());
+		UE_LOG(LogInventory, Warning, TEXT("Item name: %s does not exist in the database"), *CollectableItemRow.RowName.ToString());
 	}
 	UE_LOG(LogInventory, Warning, TEXT("Item database is not found on the Inventory Component"));
 	return false;
 }
 
-bool UInventoryComponent::RemoveItemFromInventory(FName ItemName)
+bool UInventoryComponent::RemoveItemFromInventory(FDataTableRowHandle CollectableItemRow)
 {
 	// only remove if item is in inventory
-	if (InventoryItems.Contains(ItemName))
+	if (InventoryItems.Contains(CollectableItemRow))
 	{
-		InventoryItems.Remove(ItemName);
-		UE_LOG(LogInventory, Display, TEXT("Removed %s from inventory"), *ItemName.ToString());
+		InventoryItems.Remove(CollectableItemRow);
+		UE_LOG(LogInventory, Display, TEXT("Removed %s from inventory"), *CollectableItemRow.RowName.ToString());
 		OnInventoryUpdated.Broadcast(InventoryItems);
 		// List inventory items for debugging
-		for (const FName& InventoryItem : InventoryItems)
+		for (const FDataTableRowHandle& InventoryItem : InventoryItems)
 		{
-			UE_LOG(LogInventory, Display, TEXT("Current Inventory Item: %s"), *InventoryItem.ToString());
+			UE_LOG(LogInventory, Display, TEXT("Current Inventory Item: %s"), *InventoryItem.RowName.ToString());
 		}
 		return true;
 	}
 	else
 	{
-		UE_LOG(LogInventory, Warning, TEXT("Cannot remove %s from inventory because it is not present"), *ItemName.ToString());
+		UE_LOG(LogInventory, Warning, TEXT("Cannot remove %s from inventory because it is not present"), *CollectableItemRow.RowName.ToString());
 	}
 	return false;
 }
 
-void UInventoryComponent::SelectItemByRowName(FName RowName)
+void UInventoryComponent::SelectItemByRowName(FDataTableRowHandle CollectableItemRow)
 {
-	if (!IsValid(ItemDatabase))
+	// Ensure the incoming handle is populated with a table and a row name
+	if (CollectableItemRow.IsNull())
 	{
+		UE_LOG(LogInventory, Warning, TEXT("SelectItemByRowName failed: The provided ItemRow is empty."));
 		return;
 	}
 
-	if (ItemDatabase->FindRow<FItemData>(RowName, TEXT("Selection Validation")))
+	// Validate that the row exists and is FItemData struct
+	if (CollectableItemRow.GetRow<FItemData>(TEXT("Selection Validation")))
 	{
-		CurrentSelectedRow = FDataTableRowHandle();
-		CurrentSelectedRow.DataTable = ItemDatabase;
-		CurrentSelectedRow.RowName = RowName;
-
-		// We close the menu first so the input contexts of holding an item are not dropped
+		// Close the menu first so the input contexts of holding an item are not dropped
 		ToggleInventoryMenu(); // Returns us back to the gameplay input mode, and closes the inventory menu
-		OnItemSelected.Broadcast(CurrentSelectedRow);
+		OnItemSelected.Broadcast(CollectableItemRow);
+	}
+	else
+	{
+		UE_LOG(LogInventory, Error, TEXT("SelectItemByRowName failed: Row '%s' does not use the FItemData struct."), *CollectableItemRow.RowName.ToString());
 	}
 }
 
-bool UInventoryComponent::GetItemData(FName RowName, FItemData& OutItemData)
+bool UInventoryComponent::GetItemData(FDataTableRowHandle CollectableItemRow, FItemData& OutItemData)
 {
-	if (!IsValid(ItemDatabase) || RowName.IsNone())
+	if (!IsValid(ItemDatabase) || CollectableItemRow.IsNull())
 	{
 		UE_LOG(LogInventory, Error, TEXT("Cannot get item data"));
 		return false;
 	}
 
 	// Returns a direct pointer to the Data Table memory row
-	if (FItemData* FoundItem = ItemDatabase->FindRow<FItemData>(RowName, TEXT("Item Data Lookup")))
+	if (FItemData* FoundItem = CollectableItemRow.GetRow<FItemData>(TEXT("Item Data Lookup")))
 	{
 		OutItemData = *FoundItem;
 		return true;
@@ -143,11 +146,11 @@ bool UInventoryComponent::GetItemData(FName RowName, FItemData& OutItemData)
 	return false;
 }
 
-void UInventoryComponent::ConsumeItem(FDataTableRowHandle ItemRow)
+void UInventoryComponent::ConsumeItem(FDataTableRowHandle CollectableItemRow)
 {
-	if (!ItemRow.IsNull() && ItemRow.DataTable == ItemDatabase)
+	if (!CollectableItemRow.IsNull() && CollectableItemRow.DataTable == ItemDatabase)
 	{
-		RemoveItemFromInventory(ItemRow.RowName);
+		RemoveItemFromInventory(CollectableItemRow);
 	}
 	else
 	{
