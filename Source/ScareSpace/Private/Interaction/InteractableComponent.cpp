@@ -22,21 +22,25 @@ void UInteractableComponent::EndInteraction()
 bool UInteractableComponent::QuickValidateItemInteraction(FDataTableRowHandle ItemRow)
 {
 	// No items can interact with this component
-	if (InteractableItems.Num() == 0)
+	if (InteractableItem.IsNull())
 	{
 		return false;
 	}
-	for (const FDataTableRowHandle& ItemHandle : InteractableItems)
+	else if (InteractableItem == ItemRow)
 	{
-		if (ItemHandle == ItemRow)
-		{
-			return true;
-		}
+		return true;
 	}
 	return false;
 }
 
-void UInteractableComponent::ItemInteraction(FDataTableRowHandle ItemRow)
+// Need to make sure this returns true before taking item out of inventory
+bool UInteractableComponent::TryInteractWithItem_Implementation(FDataTableRowHandle ItemRow)
 {
-	UE_LOG(LogInteraction, Display, TEXT("ItemInteraction called with item: %s"), *ItemRow.RowName.ToString());
+	// Default behavior: check if the item matches the requirement
+	if (!InteractableItem.IsNull() && ItemRow == InteractableItem)
+	{
+		// Return true so child Blueprints know the item matches
+		return true;
+	}
+	return false;
 }

@@ -87,6 +87,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool GetItemData(FName RowName, UPARAM(ref) FItemData& OutItemData);
 
+	// Item used and we can take it out of the inventory
+	void ConsumeItem(FDataTableRowHandle ItemRow);
+
 protected:
 	virtual void BeginPlay() override;
 

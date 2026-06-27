@@ -44,8 +44,9 @@ public:
 	virtual bool QuickValidateItemInteraction(FDataTableRowHandle ItemRow);
 
 	// Called when an interaction is performed with an item
-	UFUNCTION(BlueprintCallable)
-	virtual void ItemInteraction(FDataTableRowHandle ItemRow);
+	UFUNCTION(BlueprintNativeEvent, Category = "Interaction")
+	bool TryInteractWithItem(FDataTableRowHandle ItemRow);
+	virtual bool TryInteractWithItem_Implementation(FDataTableRowHandle ItemRow);
 
 	// Not used anywhere currently
 	OnInteractionEnded InteractionEnded;
@@ -57,6 +58,6 @@ public:
 protected:
 	// Items that may cause an interaction to occur. If empty, no interaction will occur anyway
 	UPROPERTY(EditAnywhere)
-	TArray<FDataTableRowHandle> InteractableItems;
+	FDataTableRowHandle InteractableItem;
 
 };

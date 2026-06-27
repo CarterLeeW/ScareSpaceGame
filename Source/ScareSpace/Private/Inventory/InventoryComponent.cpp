@@ -143,6 +143,18 @@ bool UInventoryComponent::GetItemData(FName RowName, FItemData& OutItemData)
 	return false;
 }
 
+void UInventoryComponent::ConsumeItem(FDataTableRowHandle ItemRow)
+{
+	if (!ItemRow.IsNull() && ItemRow.DataTable == ItemDatabase)
+	{
+		RemoveItemFromInventory(ItemRow.RowName);
+	}
+	else
+	{
+		UE_LOG(LogInventory, Warning, TEXT("Cannot consume item because it is not in the inventory or does not exist in the database"));
+	}
+}
+
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();

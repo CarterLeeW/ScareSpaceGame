@@ -129,8 +129,12 @@ void UInteractorComponent::BeginInteraction()
 		if (CurrentInteractableComponent->QuickValidateItemInteraction(ActiveHeldItemRow))
 		{
 			UE_LOG(LogInteraction, Display, TEXT("We found a match!"));
-			CurrentInteractableComponent->ItemInteraction(ActiveHeldItemRow);
-			StopHoldingItem();
+			if (CurrentInteractableComponent->TryInteractWithItem(ActiveHeldItemRow))
+			{
+				// Consume item
+				InventoryComponent->ConsumeItem(ActiveHeldItemRow);
+				StopHoldingItem();
+			}
 			return;
 		}
 		// Fallback
