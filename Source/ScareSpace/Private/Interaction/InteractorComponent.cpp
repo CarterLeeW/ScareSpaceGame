@@ -199,7 +199,6 @@ void UInteractorComponent::RequestEndInteraction()
 				// If object has already been thrown, then this has already occurred
 				if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent())
 				{
-					UE_LOG(LogInteraction, Display, TEXT("object dropped without throwing"));
 					PhysicsHandle->ReleaseComponent();
 				}
 			}

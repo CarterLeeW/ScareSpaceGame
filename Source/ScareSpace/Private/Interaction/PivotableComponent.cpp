@@ -57,12 +57,30 @@ bool UPivotableComponent::TryInteractWithItem(FDataTableRowHandle ItemRow)
 	// Default behavior: check if the item matches the requirement
 	if (!InteractableItem.IsNull() && ItemRow == InteractableItem)
 	{
-		if (bIsLocked && bCanClose)
+		if (bIsLocked)
 		{
 			bIsLocked = false;
 			// Handle unlocking cosmetics
+			OnUnlocked();
+
+			// Chain-unlock matching sibling doors or other pivotables on same Actor
+			if (AActor* Owner = GetOwner())
+			{
+				TArray<UPivotableComponent*> SiblingComponents;
+				Owner->GetComponents<UPivotableComponent>(SiblingComponents);
+
+				for (UPivotableComponent* Sibling : SiblingComponents)
+				{
+					if (Sibling && (Sibling != this) && Sibling->bIsLocked && (Sibling->InteractableItem == InteractableItem))
+					{
+						Sibling->bIsLocked = false;
+						// Only call one OnUnlocked() to avoid multiple cosmetic triggers if needed
+						// Sibling->OnUnlocked();
+					}
+				}
+			}
 		}
-		return true;
+		return true; // Authorizes consuming the key
 	}
 	return false;
 }
@@ -133,4 +151,9 @@ void UPivotableComponent::UpdateClosedState()
 
 	float YawAngle = FMath::Abs(DeltaRotator.Yaw);
 	bIsClosed = (YawAngle <= ClosedAngle);
+}
+
+void UPivotableComponent::OnUnlocked()
+{
+	UE_LOG(LogInteraction, Display, TEXT("Unlocking cosmetics"));
 }

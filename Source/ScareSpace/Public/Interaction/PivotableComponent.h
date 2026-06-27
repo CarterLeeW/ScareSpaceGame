@@ -77,4 +77,6 @@ protected:
 	float ClosedAngle = 5.0f;
 
 	void UpdateClosedState();
+	// Cosmetics that fire when the pivotable is unlocked, like playing a sound or changing a material
+	void OnUnlocked();
 };
