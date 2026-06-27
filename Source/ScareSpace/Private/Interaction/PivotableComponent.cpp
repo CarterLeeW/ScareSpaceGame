@@ -52,6 +52,21 @@ void UPivotableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	}
 }
 
+bool UPivotableComponent::TryInteractWithItem(FDataTableRowHandle ItemRow)
+{
+	// Default behavior: check if the item matches the requirement
+	if (!InteractableItem.IsNull() && ItemRow == InteractableItem)
+	{
+		if (bIsLocked && bCanClose)
+		{
+			bIsLocked = false;
+			// Handle unlocking cosmetics
+		}
+		return true;
+	}
+	return false;
+}
+
 void UPivotableComponent::BeginPlay()
 {
 	Super::BeginPlay();

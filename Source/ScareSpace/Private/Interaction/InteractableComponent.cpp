@@ -34,12 +34,12 @@ bool UInteractableComponent::QuickValidateItemInteraction(FDataTableRowHandle It
 }
 
 // Need to make sure this returns true before taking item out of inventory
-bool UInteractableComponent::TryInteractWithItem_Implementation(FDataTableRowHandle ItemRow)
+bool UInteractableComponent::TryInteractWithItem(FDataTableRowHandle ItemRow)
 {
 	// Default behavior: check if the item matches the requirement
 	if (!InteractableItem.IsNull() && ItemRow == InteractableItem)
 	{
-		// Return true so child Blueprints know the item matches
+		// Do stuff like unlocking
 		return true;
 	}
 	return false;

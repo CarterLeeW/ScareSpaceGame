@@ -44,9 +44,8 @@ public:
 	virtual bool QuickValidateItemInteraction(FDataTableRowHandle ItemRow);
 
 	// Called when an interaction is performed with an item
-	UFUNCTION(BlueprintNativeEvent, Category = "Interaction")
-	bool TryInteractWithItem(FDataTableRowHandle ItemRow);
-	virtual bool TryInteractWithItem_Implementation(FDataTableRowHandle ItemRow);
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	virtual bool TryInteractWithItem(FDataTableRowHandle ItemRow);
 
 	// Not used anywhere currently
 	OnInteractionEnded InteractionEnded;
