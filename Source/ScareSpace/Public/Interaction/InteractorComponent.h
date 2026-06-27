@@ -49,13 +49,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> InteractorMappingContext;
 
-	// Holding Context
+	// Holding object Context
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UInputMappingContext> HoldingMappingContext;
+	TObjectPtr<UInputMappingContext> HoldingObjectMappingContext;
 
 	// Pivoting Context
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> PivotingMappingContext;
+
+	// Holding item context
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputMappingContext> HoldingItemMappingContext;
 
 	/* Begin input actions */
 	/* Interaction Action */
@@ -73,6 +77,10 @@ public:
 	/* Pivot Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	TObjectPtr<UInputAction> PivotAction;
+
+	/* Drop held item Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UInputAction> DropHeldItemAction;
 
 	/* End input actions */
 
@@ -92,6 +100,7 @@ protected:
 
 	/* For interaction input -Started- */
 	void BeginInteraction();
+	void StopHoldingItem();
 	/* For mouse release - requests the interaction to end -Completed- */
 	void RequestEndInteraction();
 	/* Logic for continuing an interaction (hold, turn, etc.) -Triggered- */
@@ -112,9 +121,9 @@ private:
 	void ArmsLengthTrace(FHitResult& OutResult);
 
 	// Called when the interactable object is to be held
-	void BeginHolding();
+	void BeginHoldingObject();
 	// Called during ContinueInteraction to continue holding
-	void ContinueHolding();
+	void ContinueHoldingObject();
 	// Current length object is being held at
 	float TargetHoldLength = 0.0f;
 

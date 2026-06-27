@@ -2,6 +2,7 @@
 
 
 #include "Interaction/InteractableComponent.h"
+#include "Logging/ScareSpaceLogs.h"
 
 UInteractableComponent::UInteractableComponent()
 {
@@ -35,6 +36,7 @@ bool UInteractableComponent::QuickValidateItemInteraction(FDataTableRowHandle It
 	return false;
 }
 
-void UInteractableComponent::ItemInteraction(FName ItemRowName)
+void UInteractableComponent::ItemInteraction(FDataTableRowHandle ItemRow)
 {
+	UE_LOG(LogInteraction, Display, TEXT("ItemInteraction called with item: %s"), *ItemRow.RowName.ToString());
 }

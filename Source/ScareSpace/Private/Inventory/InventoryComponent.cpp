@@ -118,8 +118,10 @@ void UInventoryComponent::SelectItemByRowName(FName RowName)
 		CurrentSelectedRow = FDataTableRowHandle();
 		CurrentSelectedRow.DataTable = ItemDatabase;
 		CurrentSelectedRow.RowName = RowName;
-		OnItemSelected.Broadcast(CurrentSelectedRow);
+
+		// We close the menu first so the input contexts of holding an item are not dropped
 		ToggleInventoryMenu(); // Returns us back to the gameplay input mode, and closes the inventory menu
+		OnItemSelected.Broadcast(CurrentSelectedRow);
 	}
 }
 

@@ -45,7 +45,7 @@ public:
 
 	// Called when an interaction is performed with an item
 	UFUNCTION(BlueprintCallable)
-	virtual void ItemInteraction(FName ItemRowName);
+	virtual void ItemInteraction(FDataTableRowHandle ItemRow);
 
 	// Not used anywhere currently
 	OnInteractionEnded InteractionEnded;

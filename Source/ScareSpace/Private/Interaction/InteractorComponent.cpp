@@ -68,6 +68,7 @@ void UInteractorComponent::BeginPlay()
 		EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &UInteractorComponent::ThrowObject);
 		EnhancedInputComponent->BindAction(PushAction, ETriggerEvent::Triggered, this, &UInteractorComponent::PushObject);
 		EnhancedInputComponent->BindAction(PivotAction, ETriggerEvent::Triggered, this, &UInteractorComponent::CalculateLateralOffset);
+		EnhancedInputComponent->BindAction(DropHeldItemAction, ETriggerEvent::Triggered, this, &UInteractorComponent::StopHoldingItem);
 	}
 
 	// Store physics handle for use in interactions
@@ -81,15 +82,22 @@ void UInteractorComponent::BeginInteraction()
 
 	if (!ReachableTargetHitResult.bBlockingHit || bIsInteracting)
 	{
+		// We are holding an item and click but there is no interactable component to use it on, so we should stop holding the item
+		if (bHoldingItem)
+		{
+			StopHoldingItem();
+			return;
+		}
 		return;
 	}
 
+	// 
+	// We look for the interactable component that is associated with the mesh that was hit by the trace
+	//
 	CurrentInteractableComponent = nullptr;
-
 	// Retrieve all interactable components on the target actor
 	TArray<UInteractableComponent*> Interactables;
 	ReachableTargetHitResult.GetActor()->GetComponents<UInteractableComponent>(Interactables);
-
 	// Determine which specific component matches the traced mesh
 	for (UInteractableComponent* Interactable : Interactables)
 	{
@@ -110,24 +118,28 @@ void UInteractorComponent::BeginInteraction()
 		}
 	}
 
+	//
+	// Now we decide whether to interact with the component with an item from the inventory or in the usual way
+	// 
 	// If we are holding an item from the inventory, then we want to interact with it using that item instead of in the usual way
 	// This runs when clicking anywhere after selecting item from inventory
-	if (bHoldingItem)
+	if (bHoldingItem && IsValid(CurrentInteractableComponent))
 	{
-		if (IsValid(CurrentInteractableComponent) && CurrentInteractableComponent->QuickValidateItemInteraction(ActiveHeldItemRow))
+		// If the interactable component is valid, we can attempt to interact with it using the held item
+		if (CurrentInteractableComponent->QuickValidateItemInteraction(ActiveHeldItemRow))
 		{
 			UE_LOG(LogInteraction, Display, TEXT("We found a match!"));
-			// If the interactable component is valid, we can attempt to interact with it using the held item
+			CurrentInteractableComponent->ItemInteraction(ActiveHeldItemRow);
+			StopHoldingItem();
 			return;
 		}
 		// Fallback
 		// Do stuff like unholding the item or displaying a message like "nothing to interact with"
-		UE_LOG(LogInteraction, Display, TEXT("No match! Should put item back"));
-
-		return;
+		UE_LOG(LogInteraction, Display, TEXT("No match! Should put item back or let the player know"));
+		StopHoldingItem();
 	}
-
-	if (IsValid(CurrentInteractableComponent))
+	// We are not holding an item so we can interact with things normally
+	else if (IsValid(CurrentInteractableComponent))
 	{
 		bIsInteracting = true;
 		CurrentInteractableComponent->BeginInteraction();
@@ -135,7 +147,7 @@ void UInteractorComponent::BeginInteraction()
 		switch (CurrentInteractableComponent->InteractableType)
 		{
 		case EInteractableType::Holdable:
-			BeginHolding();
+			BeginHoldingObject();
 			break;
 		case EInteractableType::Collectable:
 			Collect();
@@ -153,6 +165,19 @@ void UInteractorComponent::BeginInteraction()
 	else
 	{
 		UE_LOG(LogInteraction, Display, TEXT("No valid interactable component matched the hit mesh"));
+	}
+}
+
+void UInteractorComponent::StopHoldingItem()
+{
+	bHoldingItem = false;
+	ActiveHeldItemRow = FDataTableRowHandle();
+	CachedActiveItemIcon = nullptr;
+	// Remove gameplay mapping context for holding item
+	checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
+	{
+		Subsystem->RemoveMappingContext(HoldingItemMappingContext);
 	}
 }
 
@@ -189,7 +214,7 @@ void UInteractorComponent::RequestEndInteraction()
 	checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
 	{
-		Subsystem->RemoveMappingContext(HoldingMappingContext);
+		Subsystem->RemoveMappingContext(HoldingObjectMappingContext);
 		Subsystem->RemoveMappingContext(PivotingMappingContext);
 	}
 }
@@ -208,7 +233,7 @@ void UInteractorComponent::ContinueInteraction()
 	switch (CurrentInteractableComponent->InteractableType)
 	{
 	case EInteractableType::Holdable:
-		ContinueHolding();
+		ContinueHoldingObject();
 		break;
 	case EInteractableType::Pivotable:
 		ContinuePivoting();
@@ -268,15 +293,15 @@ void UInteractorComponent::HandleOnItemSelected(FDataTableRowHandle SelectedItem
 
 	if (bHoldingItem)
 	{
-		if (FItemData* RowData = ActiveHeldItemRow.GetRow<FItemData>(TEXT("Interactor Context")))
+		FItemData* RowData = ActiveHeldItemRow.GetRow<FItemData>(TEXT("Interactor Context"));
+		checkf(RowData, TEXT("RowData is null for the selected item row! Maybe we deleted the row or the data table is invalid."));
+		CachedActiveItemIcon = RowData->ItemIcon;
+		// Add gameplay mapping context for holding item
+		checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
 		{
-			CachedActiveItemIcon = RowData->ItemIcon;
-		}
-		else
-		{
-			// Security fallback if the handle points to an incompatible row struct type
-			UE_LOG(LogInteraction, Error, TEXT("ActiveHeldItemRow points to a data table that does not use FItemData struct format!"));
-			bHoldingItem = false;
+			// This mapping context is disappearing immediately after this function finishes for some reason
+			Subsystem->AddMappingContext(HoldingItemMappingContext, 5);
 		}
 	}
 
@@ -304,7 +329,7 @@ void UInteractorComponent::ArmsLengthTrace(FHitResult& OutResult)
 	//}
 }
 
-void UInteractorComponent::BeginHolding()
+void UInteractorComponent::BeginHoldingObject()
 {
 	UPrimitiveComponent* ComponentToHold = ReachableTargetHitResult.GetComponent();
 	if (!IsValid(ComponentToHold))
@@ -323,7 +348,7 @@ void UInteractorComponent::BeginHolding()
 	checkf(ThisController, TEXT("PlayerController cannot be found when holding."));
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
 	{
-		Subsystem->AddMappingContext(HoldingMappingContext, 5);
+		Subsystem->AddMappingContext(HoldingObjectMappingContext, 5);
 	}
 	
 
@@ -344,7 +369,7 @@ void UInteractorComponent::BeginHolding()
 /**
  * This will be called every frame while the object is being held, so be careful with performance.
  */
-void UInteractorComponent::ContinueHolding()
+void UInteractorComponent::ContinueHoldingObject()
 {
 	// If the distance between the player and the held object is greater than the HoldAutoDropDistance, then drop it
 	if (CurrentInteractableComponent)
