@@ -169,7 +169,7 @@ void UInventoryComponent::BeginPlay()
 	ThisController = Cast<AMainPlayerController>(ThisChar->GetController());
 	checkf(ThisController, TEXT("InventoryComponent must be attached to a Character with a Player Controller!"));
 
-	// Bind Interactor input actions to the controller
+	// Bind input actions to the controller
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
 		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(ThisController->GetLocalPlayer()))
 	{

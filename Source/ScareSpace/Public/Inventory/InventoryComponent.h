@@ -32,7 +32,7 @@ public:
 	TObjectPtr<UInputMappingContext> InventoryGameplayContext;
 
 	// Open Menu Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> OpenInventoryMenuAction;
 
 	// Inventory Mapping Context during menus
@@ -40,10 +40,10 @@ public:
 	TObjectPtr<UInputMappingContext> InventoryMenuContext;
 
 	// Close Menu Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> CloseInventoryMenuAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> ToggleInventoryMenuAction;
 
 	// Toggle inventory: will replace open/close actions
@@ -71,9 +71,6 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Inventory|Events")
 	FOnInventoryUpdatedSignature OnInventoryUpdated;
 
-	// The controller that owns this interactor component
-	TObjectPtr<AMainPlayerController> ThisController;
-
 	// Allows communication with the interactor component and with the inventory widget
 	UPROPERTY(BlueprintAssignable, Category = "Inventory|Events")
 	FOnItemSelected OnItemSelected;
@@ -83,6 +80,7 @@ public:
 	void SelectItemByRowName(FDataTableRowHandle CollectableItemRow);
 
 	// Helper to let other systems fetch data safely
+	// Maybe we can make this a template function in a global library down the road
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool GetItemData(FDataTableRowHandle CollectableItemRow, UPARAM(ref) FItemDataInventory& OutItemData);
 
@@ -116,4 +114,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	bool bIsInventoryOpen = false;
 
+	// The controller that owns this component
+	TObjectPtr<AMainPlayerController> ThisController;
 };

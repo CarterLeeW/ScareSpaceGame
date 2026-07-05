@@ -14,6 +14,7 @@
 #include "Interaction/InteractorComponent.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Inventory/InventoryComponent.h"
+#include "Journal/JournalComponent.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -45,6 +46,9 @@ APlayerCharacter::APlayerCharacter()
 
 	// Inventory Component
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+
+	// Journal Component
+	JournalComponent = CreateDefaultSubobject<UJournalComponent>(TEXT("JournalComponent"));
 }
 
 // Called when the game starts or when spawned

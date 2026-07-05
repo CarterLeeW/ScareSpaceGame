@@ -15,6 +15,7 @@ class UInteractorComponent;
 class UPhysicsHandleComponent;
 struct FInputActionValue;
 class UInventoryComponent;
+class UJournalComponent;
 
 
 
@@ -38,6 +39,8 @@ public:
 	UPhysicsHandleComponent* GetPhysicsHandleComponent() const { return PhysicsHandleComponent; }
 	// Returns InventoryComponent
 	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
+	// Returns JournalComponent
+	UJournalComponent* GetJournalComponent() const { return JournalComponent; }
 
 protected:
 	// Called when the game starts or when spawned
@@ -62,5 +65,9 @@ protected:
 	// Inventory Component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TObjectPtr<UInventoryComponent> InventoryComponent;
+
+	// Journal Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Journal")
+	TObjectPtr<UJournalComponent> JournalComponent;
 
 };

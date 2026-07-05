@@ -24,6 +24,13 @@ struct FItemDataInventory : public FTableRowBase
 	TObjectPtr<UTexture2D> ItemIcon;
 };
 
+UENUM(BlueprintType)
+enum class EJournalItemType : uint8
+{
+	Memento,
+	Note
+};
+
 /**
  * For Notes or other collectables that are stored in the journal
  */
@@ -37,6 +44,9 @@ struct FItemDataJournal : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Identity")
 	FText ItemDescription;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Identity")
+	EJournalItemType JournalItemSubtype;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Cosmetic")
 	FText ItemTextContent;
