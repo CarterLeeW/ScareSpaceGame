@@ -61,7 +61,7 @@ bool UInventoryComponent::AddItemToInventory(FDataTableRowHandle CollectableItem
 	if (ItemDatabase)
 	{
 		// does item exist in database?
-		if (FItemData* FoundItem = CollectableItemRow.GetRow<FItemData>(TEXT("InventoryComponent add item to inventory")))
+		if (FItemDataInventory* FoundItem = CollectableItemRow.GetRow<FItemDataInventory>(TEXT("InventoryComponent add item to inventory")))
 		{
 			// is item not already in our inventory? Should never be false since no duplicates allowed
 			if (!InventoryItems.Contains(CollectableItemRow))
@@ -115,8 +115,8 @@ void UInventoryComponent::SelectItemByRowName(FDataTableRowHandle CollectableIte
 		return;
 	}
 
-	// Validate that the row exists and is FItemData struct
-	if (CollectableItemRow.GetRow<FItemData>(TEXT("Selection Validation")))
+	// Validate that the row exists and is FItemDataInventory struct
+	if (CollectableItemRow.GetRow<FItemDataInventory>(TEXT("Selection Validation")))
 	{
 		// Close the menu first so the input contexts of holding an item are not dropped
 		ToggleInventoryMenu(); // Returns us back to the gameplay input mode, and closes the inventory menu
@@ -124,11 +124,11 @@ void UInventoryComponent::SelectItemByRowName(FDataTableRowHandle CollectableIte
 	}
 	else
 	{
-		UE_LOG(LogInventory, Error, TEXT("SelectItemByRowName failed: Row '%s' does not use the FItemData struct."), *CollectableItemRow.RowName.ToString());
+		UE_LOG(LogInventory, Error, TEXT("SelectItemByRowName failed: Row '%s' does not use the FItemDataInventory struct."), *CollectableItemRow.RowName.ToString());
 	}
 }
 
-bool UInventoryComponent::GetItemData(FDataTableRowHandle CollectableItemRow, FItemData& OutItemData)
+bool UInventoryComponent::GetItemData(FDataTableRowHandle CollectableItemRow, FItemDataInventory& OutItemData)
 {
 	if (!IsValid(ItemDatabase) || CollectableItemRow.IsNull())
 	{
@@ -137,7 +137,7 @@ bool UInventoryComponent::GetItemData(FDataTableRowHandle CollectableItemRow, FI
 	}
 
 	// Returns a direct pointer to the Data Table memory row
-	if (FItemData* FoundItem = CollectableItemRow.GetRow<FItemData>(TEXT("Item Data Lookup")))
+	if (FItemDataInventory* FoundItem = CollectableItemRow.GetRow<FItemDataInventory>(TEXT("Item Data Lookup")))
 	{
 		OutItemData = *FoundItem;
 		return true;

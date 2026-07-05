@@ -11,7 +11,7 @@ class UInputMappingContext;
 class UInputAction;
 class UUserWidget;
 class AMainPlayerController;
-struct FItemData;
+struct FItemDataInventory;
 
 // Define the event signature. It will send the complete set of item names.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryUpdatedSignature, const TArray<FDataTableRowHandle>&, NewItemSet);
@@ -84,7 +84,7 @@ public:
 
 	// Helper to let other systems fetch data safely
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool GetItemData(FDataTableRowHandle CollectableItemRow, UPARAM(ref) FItemData& OutItemData);
+	bool GetItemData(FDataTableRowHandle CollectableItemRow, UPARAM(ref) FItemDataInventory& OutItemData);
 
 	// Item used and we can take it out of the inventory
 	void ConsumeItem(FDataTableRowHandle CollectableItemRow);

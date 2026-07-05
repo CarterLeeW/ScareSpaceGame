@@ -6,19 +6,14 @@
 #include "Engine/DataTable.h" 
 #include "ItemStructs.generated.h"
 
-// insert enum for the type of item:
-// e.g. consumable, useable
-// maybe this could just be bools?
-
 /**
- * 
+ * For Items that can be collected and used by the inventory system
  */
 USTRUCT(BlueprintType)
-struct FItemData : public FTableRowBase
+struct FItemDataInventory : public FTableRowBase
 {
 	GENERATED_BODY()
 
-	// 1. Unique ID for easy lookups in C++ (can be used to track the item's identity)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Identity")
 	FText ItemDisplayName;
 
@@ -27,4 +22,29 @@ struct FItemData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Cosmetic")
 	TObjectPtr<UTexture2D> ItemIcon;
+};
+
+/**
+ * For Notes or other collectables that are stored in the journal
+ */
+USTRUCT(BlueprintType)
+struct FItemDataJournal : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Identity")
+	FText ItemDisplayName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Identity")
+	FText ItemDescription;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Cosmetic")
+	FText ItemTextContent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Cosmetic")
+	TObjectPtr<UTexture2D> ItemBackground;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Cosmetic")
+	TObjectPtr<UTexture2D> ItemIcon;
+
 };

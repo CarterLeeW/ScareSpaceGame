@@ -14,6 +14,7 @@
 #include "Interaction/PivotableComponent.h"
 #include "InputActionValue.h"
 #include "ItemStructs.h"
+#include "Journal/JournalComponent.h"
 
 UInteractorComponent::UInteractorComponent()
 {
@@ -296,7 +297,7 @@ void UInteractorComponent::HandleOnItemSelected(FDataTableRowHandle SelectedItem
 
 	if (bHoldingItem)
 	{
-		FItemData* RowData = ActiveHeldItemRow.GetRow<FItemData>(TEXT("Interactor Context"));
+		FItemDataInventory* RowData = ActiveHeldItemRow.GetRow<FItemDataInventory>(TEXT("Interactor Context"));
 		checkf(RowData, TEXT("RowData is null for the selected item row! Maybe we deleted the row or the data table is invalid."));
 		CachedActiveItemIcon = RowData->ItemIcon;
 		// Add gameplay mapping context for holding item
@@ -488,34 +489,48 @@ void UInteractorComponent::CalculateLateralOffset(const FInputActionValue& Value
 
 void UInteractorComponent::Collect()
 {
-	// Get inventory component from the owner
-	if (ThisCharacter)
+	if (!ThisCharacter) return;
+
+	if (UCollectableComponent* CollectableComp = Cast<UCollectableComponent>(CurrentInteractableComponent))
 	{
 		UInventoryComponent* InventoryComp = ThisCharacter->FindComponentByClass<UInventoryComponent>();
-		if (IsValid(InventoryComp))
+		UJournalComponent* JournalComp = ThisCharacter->FindComponentByClass<UJournalComponent>();
+		// Determine if the collectable is an inventory item or a journal item
+		switch (CollectableComp->GetCollectableType())
 		{
-			if (UCollectableComponent* CollectableComp = Cast<UCollectableComponent>(CurrentInteractableComponent))
-			{
+			case ECollectableType::Inventory:
 				// Get name of item from the collectible component and add to inventory
-				if (InventoryComp->AddItemToInventory(CollectableComp->GetItemRow()))
+				if (IsValid(InventoryComp))
 				{
-					CollectableComp->GetOwner()->Destroy();
-					UE_LOG(LogInteraction, Display, TEXT("Successfully added %s to inventory"), *CollectableComp->GetItemRow().RowName.ToString());
+					if (InventoryComp->AddItemToInventory(CollectableComp->GetItemRow()))
+					{
+						CollectableComp->GetOwner()->Destroy();
+						UE_LOG(LogInteraction, Display, TEXT("Successfully added %s to inventory"), *CollectableComp->GetItemRow().RowName.ToString());
+					}
+					else
+					{
+						UE_LOG(LogInteraction, Warning, TEXT("Could not add %s to inventory"), *CollectableComp->GetItemRow().RowName.ToString());
+					}
 				}
 				else
 				{
-					UE_LOG(LogInteraction, Warning, TEXT("Could not add %s to inventory"), *CollectableComp->GetItemRow().RowName.ToString());
+					UE_LOG(LogInteraction, Warning, TEXT("No InventoryComponent found on %s"), *ThisCharacter->GetName());
 				}
-			}
-		}
-		else
-		{
-			UE_LOG(LogInteraction, Warning, TEXT("No InventoryComponent found on %s"), *ThisCharacter->GetName());
-		}
-	}
-	else
-	{
-		UE_LOG(LogInteraction, Warning, TEXT("Owner is not a character!"));
+				break;
+			case ECollectableType::Journal:
+				if (IsValid(JournalComp))
+				{
+					// Do journal component stuff
+				}
+				else
+				{
+					UE_LOG(LogInteraction, Warning, TEXT("No JournalComponent found on %s"), *ThisCharacter->GetName());
+				}
+				break;
+			default:
+				UE_LOG(LogInteraction, Warning, TEXT("Collectable type is unknown"));
+				break;
+		}	
 	}
 	bIsInteracting = false;
 }
