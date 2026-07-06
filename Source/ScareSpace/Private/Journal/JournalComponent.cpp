@@ -18,6 +18,46 @@ UJournalComponent::UJournalComponent()
 
 void UJournalComponent::ToggleJournalMenu()
 {
+	if (!ThisController) return;
+
+	if (!bIsJournalOpen && ThisController->bIsInMenuState)
+	{
+		UE_LOG(LogUI, Warning, TEXT("Cannot open inventory menu because another menu is already open"));
+		return;
+	}
+
+	bIsJournalOpen = !bIsJournalOpen;
+
+	// Open the journal menu
+	if (bIsJournalOpen)
+	{
+		// Create widget if not already created
+		if (!IsValid(JournalWidgetInstance) && JournalWidgetClass)
+		{
+			UE_LOG(LogUI, Warning, TEXT("Journal widget instance was not valid before opening"));
+			JournalWidgetInstance = CreateWidget<UUserWidget>(ThisController, JournalWidgetClass);
+		}
+		if (IsValid(JournalWidgetInstance))
+		{
+			// Show the UI
+			JournalWidgetInstance->SetIsFocusable(true);
+			JournalWidgetInstance->AddToViewport();
+			// Tell Controller to use UI input mode
+			ThisController->SetMenuState(true, JournalWidgetInstance);
+		}
+	}
+	// Close the journal menu
+	else
+	{
+		// Hide UI
+		if (IsValid(JournalWidgetInstance))
+		{
+			JournalWidgetInstance->RemoveFromParent();
+		}
+
+		// Tell Controller to restore gameplay
+		ThisController->SetMenuState(false, nullptr);
+	}
 }
 
 bool UJournalComponent::AddItemToJournal(FDataTableRowHandle CollectableItemRow)

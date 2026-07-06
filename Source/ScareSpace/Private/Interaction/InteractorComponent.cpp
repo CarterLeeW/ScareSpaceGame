@@ -521,6 +521,15 @@ void UInteractorComponent::Collect()
 				if (IsValid(JournalComp))
 				{
 					// Do journal component stuff
+					if (JournalComp->AddItemToJournal(CollectableComp->GetItemRow()))
+					{
+						CollectableComp->GetOwner()->Destroy();
+						UE_LOG(LogInteraction, Display, TEXT("Successfully added %s to journal"), *CollectableComp->GetItemRow().RowName.ToString());
+					}
+					else
+					{
+						UE_LOG(LogInteraction, Warning, TEXT("Could not add %s to journal"), *CollectableComp->GetItemRow().RowName.ToString());
+					}
 				}
 				else
 				{

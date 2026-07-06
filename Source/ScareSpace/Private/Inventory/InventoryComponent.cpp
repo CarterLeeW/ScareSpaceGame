@@ -20,6 +20,12 @@ void UInventoryComponent::ToggleInventoryMenu()
 {
 	if (!ThisController) return;
 
+	if (!bIsInventoryOpen && ThisController->bIsInMenuState)
+	{
+		UE_LOG(LogUI, Warning, TEXT("Cannot open inventory menu because another menu is already open"));
+		return;
+	}
+
 	bIsInventoryOpen = !bIsInventoryOpen;
 
 	// Open the inventory menu

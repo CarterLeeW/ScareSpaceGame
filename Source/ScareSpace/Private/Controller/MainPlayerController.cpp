@@ -29,6 +29,7 @@ void AMainPlayerController::SetMenuState(bool bIsMenuOpen, UUserWidget* Inventor
 	{
 		if (bIsMenuOpen)
 		{
+			bIsInMenuState = true;
 			// 1. Snapshot: Check which gameplay contexts are currently active
 			ActiveContextSnapshot.Empty();
 			for (UInputMappingContext* IMC : InputConfig->AllGameplayContexts)
@@ -60,6 +61,7 @@ void AMainPlayerController::SetMenuState(bool bIsMenuOpen, UUserWidget* Inventor
 		}
 		else
 		{
+			bIsInMenuState = false;
 			// 1. Wipe Menu input
 			Subsystem->ClearAllMappings();
 

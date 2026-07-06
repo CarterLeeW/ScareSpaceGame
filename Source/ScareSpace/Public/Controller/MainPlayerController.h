@@ -62,6 +62,8 @@ public:
 	// Switches between normal and menu input mappings
 	void SetMenuState(bool bIsMenuOpen, UUserWidget* InventoryWidgetInstance);
 
+	bool bIsInMenuState = false;
+
 protected:
 	/* Begin MappingContexts */
 	

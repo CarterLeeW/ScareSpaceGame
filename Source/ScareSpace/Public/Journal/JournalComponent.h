@@ -23,22 +23,14 @@ public:
 
 	/* Input */
 	// Journal Mapping Context during gameplay
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Journal")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> JournalGameplayContext;
 
-	// Open Journal Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Journal")
-	TObjectPtr<UInputAction> OpenJournalMenuAction;
-
 	// Journal Mapping Context during menus
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Journal")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> JournalMenuContext;
 
-	// Close Journal Input Action
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Journal")
-	TObjectPtr<UInputAction> CloseJournalMenuAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Journal")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> ToggleJournalMenuAction;
 
 	// Toggle journal: will replace open/close actions
