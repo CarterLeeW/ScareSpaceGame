@@ -8,6 +8,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Logging/ScareSpaceLogs.h"
 #include "Blueprint/UserWidget.h"
+#include "ItemStructs.h"
 
 UJournalComponent::UJournalComponent()
 {
@@ -22,7 +23,7 @@ void UJournalComponent::ToggleJournalMenu()
 
 	if (!bIsJournalOpen && ThisController->bIsInMenuState)
 	{
-		UE_LOG(LogUI, Warning, TEXT("Cannot open inventory menu because another menu is already open"));
+		UE_LOG(LogUI, Warning, TEXT("Cannot open journal menu because another menu is already open"));
 		return;
 	}
 
@@ -62,11 +63,39 @@ void UJournalComponent::ToggleJournalMenu()
 
 bool UJournalComponent::AddItemToJournal(FDataTableRowHandle CollectableItemRow)
 {
+	// All journal items are unique
+	if (JournalItemDatabase)
+	{
+		// item in database?
+		if (FItemDataJournal* FoundItem = CollectableItemRow.GetRow<FItemDataJournal>(TEXT("JournalComponent add item to journal")))
+		{
+			if (!JournalItems.Contains(CollectableItemRow))
+			{
+				JournalItems.Add(CollectableItemRow);
+				OnJournalUpdated.Broadcast(JournalItems);
+				return true;
+			}
+			else
+			{
+				//UE_LOG(LogJournal, Warning, TEXT("Item %s already exists in journal"), *CollectableItemRow.RowName.ToString());
+			}
+		}
+	}
 	return false;
 }
 
 bool UJournalComponent::RemoveItemFromJournal(FDataTableRowHandle CollectableItemRow)
 {
+	if (JournalItems.Contains(CollectableItemRow))
+	{
+		JournalItems.Remove(CollectableItemRow);
+		OnJournalUpdated.Broadcast(JournalItems);
+		return true;
+	}
+	else
+	{
+		//UE_LOG(LogJournal, Warning, TEXT("Cannot remove %s from journal because it is not present"), *CollectableItemRow.RowName.ToString());
+	}
 	return false;
 }
 
@@ -94,12 +123,4 @@ void UJournalComponent::BeginPlay()
 
 	// Create the journal widget
 	JournalWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), JournalWidgetClass);
-}
-
-void UJournalComponent::OpenJournalMenu()
-{
-}
-
-void UJournalComponent::CloseJournalMenu()
-{
 }

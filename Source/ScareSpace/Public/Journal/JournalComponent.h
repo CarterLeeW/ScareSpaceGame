@@ -11,6 +11,9 @@ class UInputAction;
 class UUserWidget;
 class AMainPlayerController;
 
+// Define the event signature. It will send the complete set of item names.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnJournalUpdatedSignature, const TArray<FDataTableRowHandle>&, NewJournalItems);
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SCARESPACE_API UJournalComponent : public UActorComponent
@@ -42,15 +45,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Journal")
 	bool RemoveItemFromJournal(FDataTableRowHandle CollectableItemRow);
 
+	UPROPERTY(BlueprintAssignable, Category = "Journal|Events")
+	FOnJournalUpdatedSignature OnJournalUpdated;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
-	UFUNCTION(BlueprintCallable, Category = "Journal")
-	void OpenJournalMenu();
-
-	UFUNCTION(BlueprintCallable, Category = "Journal")
-	void CloseJournalMenu();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Journal")
 	TArray<FDataTableRowHandle> JournalItems;
