@@ -11,5 +11,5 @@ UCollectableComponent::UCollectableComponent()
 
 void UCollectableComponent::BeginInteraction()
 {
-	UE_LOG(LogInteraction, Display, TEXT("This is where visual and sound effects are played by the collected item"));
+	
 }
