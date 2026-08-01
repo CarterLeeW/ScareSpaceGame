@@ -36,7 +36,7 @@ public:
 
 private:
 	// Item row that this collectable represents. This is used to determine what item is being collected when the player interacts with it.
-	UPROPERTY(EditDefaultsOnly, Category = "Collectable")
+	UPROPERTY(EditAnywhere, Category = "Collectable")
 	FDataTableRowHandle CollectableItemRow;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Collectable")

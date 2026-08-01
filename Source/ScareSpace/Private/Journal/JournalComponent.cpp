@@ -77,7 +77,8 @@ bool UJournalComponent::AddItemToJournal(FDataTableRowHandle CollectableItemRow)
 			}
 			else
 			{
-				//UE_LOG(LogJournal, Warning, TEXT("Item %s already exists in journal"), *CollectableItemRow.RowName.ToString());
+				// Doesn't build for some reason?
+				// UE_LOG(LogJournal, Warning, TEXT("Item %s already exists in journal"), *CollectableItemRow.RowName.ToString());
 			}
 		}
 	}
