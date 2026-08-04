@@ -11,6 +11,7 @@ UInteractableComponent::UInteractableComponent()
 
 void UInteractableComponent::BeginInteraction()
 {
+	InteractionBegins.Broadcast();
 	//UE_LOG(LogTemp, Display, TEXT("Begin interaction Base Implementation"));
 }
 
@@ -28,6 +29,7 @@ bool UInteractableComponent::QuickValidateItemInteraction(FDataTableRowHandle Co
 	}
 	else if (InteractableItem == CollectableItemRow)
 	{
+		InteractWithItem.Broadcast();
 		return true;
 	}
 	return false;

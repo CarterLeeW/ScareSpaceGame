@@ -7,7 +7,8 @@
 #include "InteractableComponent.generated.h"
 
 // Not used anywhere currently
-DECLARE_MULTICAST_DELEGATE(OnInteractionEnded);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractionBegins);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractWithItem);
 
 /* Label for the type of interactable component */
 UENUM(BlueprintType)
@@ -47,8 +48,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	virtual bool TryInteractWithItem(FDataTableRowHandle CollectableItemRow);
 
-	// Not used anywhere currently
-	OnInteractionEnded InteractionEnded;
+	UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	FOnInteractWithItem InteractWithItem;
+
+	UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	FOnInteractionBegins InteractionBegins;
 
 	// HUD icon for this interactable
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
