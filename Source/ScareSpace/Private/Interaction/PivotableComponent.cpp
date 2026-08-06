@@ -15,6 +15,8 @@ UPivotableComponent::UPivotableComponent()
 
 void UPivotableComponent::BeginInteraction()
 {
+	InteractionCounter = FMath::Clamp(InteractionCounter + 1, 0, 255);
+	OnInteractionBegins.Broadcast();
 	if (bIsLocked)
 	{
 		// Handle locked cosmetics

@@ -11,5 +11,6 @@ UCollectableComponent::UCollectableComponent()
 
 void UCollectableComponent::BeginInteraction()
 {
-	
+	InteractionCounter = FMath::Clamp(InteractionCounter + 1, 0, 255);
+	OnInteractionBegins.Broadcast();
 }

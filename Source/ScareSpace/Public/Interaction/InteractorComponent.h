@@ -7,6 +7,8 @@
 #include "InteractorComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteractionIconChanged, UTexture2D*, NewIcon);
+// Can be for tutorials that need to track number of interactions had
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractionBeginsInteractor);
 
 class UInputMappingContext;
 class UInputAction;
@@ -94,6 +96,18 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnInteractionIconChanged OnInteractionIconChanged;
 
+	// Event called when an interaction begins
+	UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	FOnInteractionBeginsInteractor OnInteractionBegins;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Interaction")
+	uint8 PivotableInteractionCounter = 0;
+	UPROPERTY(BlueprintReadOnly, Category = "Interaction")
+	uint8 CollectableInteractionCounter = 0;
+	UPROPERTY(BlueprintReadOnly, Category = "Interaction")
+	uint8 HoldableInteractionCounter = 0;
+	UPROPERTY(BlueprintReadOnly, Category = "Interaction")
+	uint8 ItemOnlyInteractionCounter = 0;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

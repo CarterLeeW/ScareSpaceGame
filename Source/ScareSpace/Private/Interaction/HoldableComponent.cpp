@@ -12,6 +12,8 @@ UHoldableComponent::UHoldableComponent()
 
 void UHoldableComponent::BeginInteraction()
 {
+	InteractionCounter = FMath::Clamp(InteractionCounter + 1, 0, 255);
+	OnInteractionBegins.Broadcast();
 	bIsBeingHeld = true;
 	// Disable blocking collision with pawns so that the player can walk through the object and not stand on it etc.
 	if (UStaticMeshComponent* Mesh = GetOwner()->GetComponentByClass<UStaticMeshComponent>())

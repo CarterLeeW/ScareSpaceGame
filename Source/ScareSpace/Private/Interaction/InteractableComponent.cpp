@@ -11,7 +11,8 @@ UInteractableComponent::UInteractableComponent()
 
 void UInteractableComponent::BeginInteraction()
 {
-	InteractionBegins.Broadcast();
+	InteractionCounter = FMath::Clamp(InteractionCounter + 1, 0, 255);
+	OnInteractionBegins.Broadcast();
 	//UE_LOG(LogTemp, Display, TEXT("Begin interaction Base Implementation"));
 }
 
@@ -29,7 +30,6 @@ bool UInteractableComponent::QuickValidateItemInteraction(FDataTableRowHandle Co
 	}
 	else if (InteractableItem == CollectableItemRow)
 	{
-		InteractWithItem.Broadcast();
 		return true;
 	}
 	return false;
@@ -42,6 +42,7 @@ bool UInteractableComponent::TryInteractWithItem(FDataTableRowHandle Collectable
 	if (!InteractableItem.IsNull() && CollectableItemRow == InteractableItem)
 	{
 		// Do stuff like unlocking
+		OnInteractWithItem.Broadcast();
 		return true;
 	}
 	return false;

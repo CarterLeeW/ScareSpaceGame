@@ -147,25 +147,32 @@ void UInteractorComponent::BeginInteraction()
 	else if (IsValid(CurrentInteractableComponent))
 	{
 		bIsInteracting = true;
-		CurrentInteractableComponent->BeginInteraction();
+		CurrentInteractableComponent->BeginInteraction(); // how necessary is this to be the virtual function
 
 		switch (CurrentInteractableComponent->InteractableType)
 		{
 		case EInteractableType::Holdable:
+			HoldableInteractionCounter = FMath::Clamp(HoldableInteractionCounter + 1, 0, 255);
 			BeginHoldingObject();
 			break;
 		case EInteractableType::Collectable:
+			CollectableInteractionCounter = FMath::Clamp(CollectableInteractionCounter + 1, 0, 255);
 			Collect();
 			break;
 		case EInteractableType::Pivotable:
+			PivotableInteractionCounter = FMath::Clamp(PivotableInteractionCounter + 1, 0, 255);
 			BeginPivoting();
 			break;
 		case EInteractableType::ItemOnly:
+			ItemOnlyInteractionCounter = FMath::Clamp(ItemOnlyInteractionCounter + 1, 0, 255);
 			UE_LOG(LogInteraction, Display, TEXT("%s has a basic item-only interactable component and requires an item to interact with"), *CurrentInteractableComponent->GetOwner()->GetName());
 			break;
 		default:
+
 			UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be handled on %s"), *CurrentInteractableComponent->GetOwner()->GetName());
 		}
+		OnInteractionBegins.Broadcast();
+
 	}
 	else
 	{
@@ -431,7 +438,6 @@ void UInteractorComponent::BeginPivoting()
 		);
 	}
 	// Fire cosmetics on the pivotable component
-	PivotableComp->BeginInteraction();
 }
 
 void UInteractorComponent::ContinuePivoting()

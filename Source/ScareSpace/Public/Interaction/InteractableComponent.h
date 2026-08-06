@@ -49,14 +49,17 @@ public:
 	virtual bool TryInteractWithItem(FDataTableRowHandle CollectableItemRow);
 
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
-	FOnInteractWithItem InteractWithItem;
+	FOnInteractWithItem OnInteractWithItem;
 
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
-	FOnInteractionBegins InteractionBegins;
+	FOnInteractionBegins OnInteractionBegins;
 
 	// HUD icon for this interactable
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	TObjectPtr<UTexture2D> InteractionIcon;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Interaction")
+	uint8 InteractionCounter = 0;
 
 protected:
 	// Items that may cause an interaction to occur. If empty, no interaction will occur anyway

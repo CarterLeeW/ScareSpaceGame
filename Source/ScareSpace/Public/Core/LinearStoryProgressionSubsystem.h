@@ -10,7 +10,6 @@ UENUM(BlueprintType)
 enum class EStoryPhase : uint8
 {
     ArriveAtHouse = 0,
-    ReadJournal,
     FindSpareKey,
     EnterHouse,
     StartBasementFire,
