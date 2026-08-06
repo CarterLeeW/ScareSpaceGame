@@ -48,7 +48,7 @@ struct FItemDataJournal : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Identity")
 	EJournalItemType JournalItemSubtype;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Cosmetic")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Cosmetic", meta = (MultiLine = true))
 	FText ItemTextContent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Cosmetic")
