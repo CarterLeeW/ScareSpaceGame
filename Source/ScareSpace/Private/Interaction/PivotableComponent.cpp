@@ -82,6 +82,7 @@ bool UPivotableComponent::TryInteractWithItem(FDataTableRowHandle CollectableIte
 				}
 			}
 		}
+		OnInteractWithItem.Broadcast();
 		return true; // Authorizes consuming the key
 	}
 	return false;

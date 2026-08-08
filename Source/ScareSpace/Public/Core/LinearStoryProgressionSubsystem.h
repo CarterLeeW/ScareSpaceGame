@@ -33,7 +33,8 @@ enum class EStoryPhase : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStoryPhaseAdvanced, EStoryPhase, NewPhase);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnJournalEntryRequested, FDataTableRowHandle, RowHandle);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnJournalItemAddRequest, FDataTableRowHandle, RowHandle);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnJournalItemRemoveRequest, FDataTableRowHandle, RowHandle);
 
 UCLASS()
 class SCARESPACE_API ULinearStoryProgressionSubsystem : public UGameInstanceSubsystem
@@ -44,10 +45,16 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
     UPROPERTY(BlueprintAssignable, Category = "Journal")
-    FOnJournalEntryRequested OnJournalEntryRequested;
+    FOnJournalItemAddRequest OnJournalItemAddRequested;
 
     UFUNCTION(BlueprintCallable, Category = "Journal")
     void AddJournalEntry(FDataTableRowHandle RowHandle);
+
+    UPROPERTY(BlueprintAssignable, Category = "Journal")
+    FOnJournalItemRemoveRequest OnJournalItemRemoveRequested;
+
+    UFUNCTION(BlueprintCallable, Category = "Journal")
+    void RemoveJournalEntry(FDataTableRowHandle RowHandle);
 
     UPROPERTY(BlueprintAssignable, Category = "Progression")
     FOnStoryPhaseAdvanced OnStoryPhaseAdvanced;

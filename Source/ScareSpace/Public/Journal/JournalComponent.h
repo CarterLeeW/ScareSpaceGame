@@ -43,10 +43,12 @@ public:
 	bool AddItemToJournal(FDataTableRowHandle CollectableItemRow);
 	// Required helper to satisfy void requirement for delegates
 	UFUNCTION()
-	void HandleJournalEntryRequested(FDataTableRowHandle CollectableItemRow);
+	void HandleJournalEntryAddRequested(FDataTableRowHandle CollectableItemRow);
 
 	UFUNCTION(BlueprintCallable, Category = "Journal")
 	bool RemoveItemFromJournal(FDataTableRowHandle CollectableItemRow);
+	UFUNCTION()
+	void HandleJournalEntryRemoveRequested(FDataTableRowHandle CollectableItemRow);
 
 	UPROPERTY(BlueprintAssignable, Category = "Journal|Events")
 	FOnJournalUpdatedSignature OnJournalUpdated;

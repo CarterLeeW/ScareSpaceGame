@@ -86,8 +86,14 @@ bool UJournalComponent::AddItemToJournal(FDataTableRowHandle CollectableItemRow)
 	return false;
 }
 
-void UJournalComponent::HandleJournalEntryRequested(FDataTableRowHandle CollectableItemRow)
+void UJournalComponent::HandleJournalEntryAddRequested(FDataTableRowHandle CollectableItemRow)
 {
+	// check that we don't already have this journal item
+	if (JournalItems.Contains(CollectableItemRow))
+	{
+		UE_LOG(LogJournal, Log, TEXT("%s already in player's journal"), *CollectableItemRow.RowName.ToString());
+		return;
+	}
 	if (AddItemToJournal(CollectableItemRow))
 	{
 		UE_LOG(LogJournal, Log, TEXT("Added %s to journal via subsystem request"), *CollectableItemRow.RowName.ToString());
@@ -111,6 +117,24 @@ bool UJournalComponent::RemoveItemFromJournal(FDataTableRowHandle CollectableIte
 		UE_LOG(LogJournal, Warning, TEXT("Cannot remove %s from journal because it is not present"), *CollectableItemRow.RowName.ToString());
 	}
 	return false;
+}
+
+void UJournalComponent::HandleJournalEntryRemoveRequested(FDataTableRowHandle CollectableItemRow)
+{
+	// check that we have this journal item
+	if (!JournalItems.Contains(CollectableItemRow))
+	{
+		UE_LOG(LogJournal, Log, TEXT("%s not in player's journal"), *CollectableItemRow.RowName.ToString());
+		return;
+	}
+	if (RemoveItemFromJournal(CollectableItemRow))
+	{
+		UE_LOG(LogJournal, Log, TEXT("Removed %s to journal via subsystem request"), *CollectableItemRow.RowName.ToString());
+	}
+	else
+	{
+		UE_LOG(LogJournal, Warning, TEXT("Failed to remove %s to journal via subsystem request"), *CollectableItemRow.RowName.ToString());
+	}
 }
 
 void UJournalComponent::BeginPlay()
@@ -143,7 +167,8 @@ void UJournalComponent::BeginPlay()
 	{
 		if (ULinearStoryProgressionSubsystem* Subsystem = GameInstance->GetSubsystem<ULinearStoryProgressionSubsystem>())
 		{
-			Subsystem->OnJournalEntryRequested.AddDynamic(this, &UJournalComponent::HandleJournalEntryRequested);
+			Subsystem->OnJournalItemAddRequested.AddDynamic(this, &UJournalComponent::HandleJournalEntryAddRequested);
+			Subsystem->OnJournalItemRemoveRequested.AddDynamic(this, &UJournalComponent::HandleJournalEntryRemoveRequested);
 		}
 	}
 }

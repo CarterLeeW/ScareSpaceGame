@@ -11,7 +11,12 @@ void ULinearStoryProgressionSubsystem::Initialize(FSubsystemCollectionBase& Coll
 
 void ULinearStoryProgressionSubsystem::AddJournalEntry(FDataTableRowHandle RowHandle)
 {
-	OnJournalEntryRequested.Broadcast(RowHandle);
+	OnJournalItemAddRequested.Broadcast(RowHandle);
+}
+
+void ULinearStoryProgressionSubsystem::RemoveJournalEntry(FDataTableRowHandle RowHandle)
+{
+    OnJournalItemRemoveRequested.Broadcast(RowHandle);
 }
 
 EStoryPhase ULinearStoryProgressionSubsystem::GetCurrentPhase() const
