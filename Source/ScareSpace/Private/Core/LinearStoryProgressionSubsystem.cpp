@@ -9,6 +9,11 @@ void ULinearStoryProgressionSubsystem::Initialize(FSubsystemCollectionBase& Coll
     CurrentPhase = EStoryPhase::ArriveAtHouse;
 }
 
+void ULinearStoryProgressionSubsystem::AddJournalEntry(FDataTableRowHandle RowHandle)
+{
+	OnJournalEntryRequested.Broadcast(RowHandle);
+}
+
 EStoryPhase ULinearStoryProgressionSubsystem::GetCurrentPhase() const
 {
     return CurrentPhase;

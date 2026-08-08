@@ -41,6 +41,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Journal")
 	bool AddItemToJournal(FDataTableRowHandle CollectableItemRow);
+	// Required helper to satisfy void requirement for delegates
+	UFUNCTION()
+	void HandleJournalEntryRequested(FDataTableRowHandle CollectableItemRow);
 
 	UFUNCTION(BlueprintCallable, Category = "Journal")
 	bool RemoveItemFromJournal(FDataTableRowHandle CollectableItemRow);

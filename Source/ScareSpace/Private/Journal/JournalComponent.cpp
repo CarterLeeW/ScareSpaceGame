@@ -9,6 +9,8 @@
 #include "Logging/ScareSpaceLogs.h"
 #include "Blueprint/UserWidget.h"
 #include "ItemStructs.h"
+#include "Core/LinearStoryProgressionSubsystem.h"
+
 
 UJournalComponent::UJournalComponent()
 {
@@ -77,12 +79,23 @@ bool UJournalComponent::AddItemToJournal(FDataTableRowHandle CollectableItemRow)
 			}
 			else
 			{
-				// Doesn't build for some reason?
-				// UE_LOG(LogJournal, Warning, TEXT("Item %s already exists in journal"), *CollectableItemRow.RowName.ToString());
+				UE_LOG(LogJournal, Warning, TEXT("Item %s already exists in journal"), *CollectableItemRow.RowName.ToString());
 			}
 		}
 	}
 	return false;
+}
+
+void UJournalComponent::HandleJournalEntryRequested(FDataTableRowHandle CollectableItemRow)
+{
+	if (AddItemToJournal(CollectableItemRow))
+	{
+		UE_LOG(LogJournal, Log, TEXT("Added %s to journal via subsystem request"), *CollectableItemRow.RowName.ToString());
+	}
+	else
+	{
+		UE_LOG(LogJournal, Warning, TEXT("Failed to add %s to journal via subsystem request"), *CollectableItemRow.RowName.ToString());
+	}
 }
 
 bool UJournalComponent::RemoveItemFromJournal(FDataTableRowHandle CollectableItemRow)
@@ -95,7 +108,7 @@ bool UJournalComponent::RemoveItemFromJournal(FDataTableRowHandle CollectableIte
 	}
 	else
 	{
-		//UE_LOG(LogJournal, Warning, TEXT("Cannot remove %s from journal because it is not present"), *CollectableItemRow.RowName.ToString());
+		UE_LOG(LogJournal, Warning, TEXT("Cannot remove %s from journal because it is not present"), *CollectableItemRow.RowName.ToString());
 	}
 	return false;
 }
@@ -124,4 +137,13 @@ void UJournalComponent::BeginPlay()
 
 	// Create the journal widget
 	JournalWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), JournalWidgetClass);
+
+	// Bind to subsystem updates
+	if (UGameInstance* GameInstance = GetWorld()->GetGameInstance())
+	{
+		if (ULinearStoryProgressionSubsystem* Subsystem = GameInstance->GetSubsystem<ULinearStoryProgressionSubsystem>())
+		{
+			Subsystem->OnJournalEntryRequested.AddDynamic(this, &UJournalComponent::HandleJournalEntryRequested);
+		}
+	}
 }

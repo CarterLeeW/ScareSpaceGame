@@ -21,7 +21,7 @@ enum class EInteractableType : uint8
 	ItemOnly
 };
 
-UCLASS(Abstract, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(Abstract, Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class SCARESPACE_API UInteractableComponent : public UActorComponent
 {
 	GENERATED_BODY()

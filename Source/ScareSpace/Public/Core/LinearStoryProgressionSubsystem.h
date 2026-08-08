@@ -9,18 +9,17 @@
 UENUM(BlueprintType)
 enum class EStoryPhase : uint8
 {
-    ArriveAtHouse = 0,
-    FindSpareKey,
-    EnterHouse,
-    StartBasementFire,
-    SeeFigureOnStairs,
+    // Major unskippable phases only. Sub-phases are handled by independent actors
+    // Advancing to a new phase will likely cause a memo reset to represent the new objectives and clean old ones
+    ArriveAtHouse = 0, // Between getting out of the car and entering the back door
+    StartBasementFire, // player can find key to back door without trying to unlock it first
     TagItems,
-    SnowedIn,
+    LeaveHouse, // Includes snowed-in sequence
     GoToBed,
     GetWater,
     WatchTV,
     PowerOutage,
-    FindFlashlight,
+    FindFlashlight, // optional?
     CheckGenerator,
     FindGeneratorFuel,
     AnswerPhone,
@@ -34,6 +33,7 @@ enum class EStoryPhase : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStoryPhaseAdvanced, EStoryPhase, NewPhase);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnJournalEntryRequested, FDataTableRowHandle, RowHandle);
 
 UCLASS()
 class SCARESPACE_API ULinearStoryProgressionSubsystem : public UGameInstanceSubsystem
@@ -42,6 +42,12 @@ class SCARESPACE_API ULinearStoryProgressionSubsystem : public UGameInstanceSubs
 
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+    UPROPERTY(BlueprintAssignable, Category = "Journal")
+    FOnJournalEntryRequested OnJournalEntryRequested;
+
+    UFUNCTION(BlueprintCallable, Category = "Journal")
+    void AddJournalEntry(FDataTableRowHandle RowHandle);
 
     UPROPERTY(BlueprintAssignable, Category = "Progression")
     FOnStoryPhaseAdvanced OnStoryPhaseAdvanced;
