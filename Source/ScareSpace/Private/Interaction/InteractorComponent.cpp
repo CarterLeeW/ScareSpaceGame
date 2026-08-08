@@ -7,7 +7,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
-#include "Interaction/InteractableComponent.h"
 #include "Logging/ScareSpaceLogs.h"
 #include "Inventory/InventoryComponent.h"
 #include "Interaction/CollectableComponent.h"
@@ -171,7 +170,7 @@ void UInteractorComponent::BeginInteraction()
 
 			UE_LOG(LogInteraction, Warning, TEXT("EInteractableType cannot be handled on %s"), *CurrentInteractableComponent->GetOwner()->GetName());
 		}
-		OnInteractionBegins.Broadcast();
+		OnInteractionBegins.Broadcast(CurrentInteractableComponent->InteractableType);
 
 	}
 	else

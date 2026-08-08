@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
+#include "Interaction/InteractableComponent.h"
 #include "InteractorComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteractionIconChanged, UTexture2D*, NewIcon);
 // Can be for tutorials that need to track number of interactions had
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractionBeginsInteractor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteractionBeginsInteractor, EInteractableType, InteractableType);
 
 class UInputMappingContext;
 class UInputAction;

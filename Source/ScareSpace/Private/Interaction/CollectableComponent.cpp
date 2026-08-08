@@ -6,6 +6,8 @@
 
 UCollectableComponent::UCollectableComponent()
 {
+	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
 	InteractableType = EInteractableType::Collectable;
 }
 

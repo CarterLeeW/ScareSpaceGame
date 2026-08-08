@@ -7,6 +7,8 @@
 
 UHoldableComponent::UHoldableComponent()
 {
+	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
 	InteractableType = EInteractableType::Holdable;
 }
 
