@@ -26,6 +26,7 @@ void UHoldableComponent::BeginInteraction()
 
 void UHoldableComponent::EndInteraction()
 {
+	OnInteractionEnds.Broadcast();
 	bIsBeingHeld = false;
 	if (AActor* Owner = GetOwner())
 	{

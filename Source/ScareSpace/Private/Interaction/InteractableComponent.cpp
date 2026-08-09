@@ -18,6 +18,7 @@ void UInteractableComponent::BeginInteraction()
 
 void UInteractableComponent::EndInteraction()
 {
+	OnInteractionEnds.Broadcast();
 	//UE_LOG(LogTemp, Display, TEXT("End interaction Base Implementation"));
 }
 

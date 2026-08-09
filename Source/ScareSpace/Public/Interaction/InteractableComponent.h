@@ -6,8 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "InteractableComponent.generated.h"
 
-// Not used anywhere currently
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractionBegins);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractionEnds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractWithItem);
 
 /* Label for the type of interactable component */
@@ -53,6 +53,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnInteractionBegins OnInteractionBegins;
+
+	UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	FOnInteractionEnds OnInteractionEnds;
 
 	// HUD icon for this interactable
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")

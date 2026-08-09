@@ -29,6 +29,7 @@ void UPivotableComponent::BeginInteraction()
 
 void UPivotableComponent::EndInteraction()
 {
+	OnInteractionEnds.Broadcast();
 	bIsBeingHeld = false;
 }
 
