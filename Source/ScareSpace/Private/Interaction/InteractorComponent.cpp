@@ -14,6 +14,7 @@
 #include "InputActionValue.h"
 #include "ItemStructs.h"
 #include "Journal/JournalComponent.h"
+#include "Interaction/ItemInteractableComponent.h"
 
 UInteractorComponent::UInteractorComponent()
 {
@@ -107,6 +108,15 @@ void UInteractorComponent::BeginInteraction()
 			if (IsChildOfPivotableComponent(ReachableTargetHitResult.GetComponent(), Pivotable))
 			{
 				CurrentInteractableComponent = Pivotable;
+				break;
+			}
+		}
+		else if (UItemInteractableComponent* ItemOnly = Cast<UItemInteractableComponent>(Interactable))
+		{
+			// Verify if this item-only component drives the exact mesh hit by the trace
+			if (IsChildOfItemInteractableComponent(ReachableTargetHitResult.GetComponent(), ItemOnly))
+			{
+				CurrentInteractableComponent = ItemOnly;
 				break;
 			}
 		}
@@ -572,6 +582,29 @@ bool UInteractorComponent::IsChildOfPivotableComponent(UPrimitiveComponent* Targ
 		}
 	}
 
+	return false;
+}
+
+bool UInteractorComponent::IsChildOfItemInteractableComponent(UPrimitiveComponent* TargetedComponent, UItemInteractableComponent* ItemInteractableComp)
+{
+	if (!IsValid(ItemInteractableComp) || !IsValid(ItemInteractableComp->ItemOnlyParentComponent))
+	{
+		return false;
+	}
+	// Direct memory address comparison
+	if (TargetedComponent == ItemInteractableComp->ItemOnlyParentComponent)
+	{
+		return true;
+	}
+	TArray<USceneComponent*, FDefaultAllocator> Parents;
+	TargetedComponent->GetParentComponents(Parents);
+	for (USceneComponent* ParentComp : Parents)
+	{
+		if (ParentComp == ItemInteractableComp->ItemOnlyParentComponent)
+		{
+			return true;
+		}
+	}
 	return false;
 }
 

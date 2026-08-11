@@ -17,6 +17,7 @@ class UInteractableComponent;
 class UPhysicsHandleComponent;
 class UPivotableComponent;
 class UInventoryComponent;
+class UItemInteractableComponent;
 struct FInputActionValue;
 
 UCLASS( ClassGroup=(Interacting), meta=(BlueprintSpawnableComponent) )
@@ -169,6 +170,9 @@ private:
 
 	// True if the touched component is part of a moveable unit (ex. handle) - false if it is static (ex. door frame)
 	bool IsChildOfPivotableComponent(UPrimitiveComponent* TargetedComponent, UPivotableComponent* PivotableComp);
+
+	// True if touched component is related to an item only interactable component - false if it is not
+	bool IsChildOfItemInteractableComponent(UPrimitiveComponent* TargetedComponent, UItemInteractableComponent* ItemInteractableComp);
 
 	// Update the interaction prompt icon and other stuff if applicable
 	void UpdateInteractionPrompt();
