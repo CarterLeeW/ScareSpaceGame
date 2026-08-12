@@ -1,36 +1,61 @@
 // Copyright Carter Wooton
 
 #include "Interaction/PivotableComponent.h"
-#include "Logging/ScareSpaceLogs.h"
+#include "Interaction/InteractorComponent.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Components/SceneComponent.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "GameFramework/PlayerController.h"
+#include "Logging/ScareSpaceLogs.h"
 
 UPivotableComponent::UPivotableComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
-	InteractableType = EInteractableType::Pivotable;
 }
 
-void UPivotableComponent::BeginInteraction()
+void UPivotableComponent::BeginPlay()
 {
-	InteractionCounter = FMath::Clamp(InteractionCounter + 1, 0, 255);
-	OnInteractionBegins.Broadcast();
-	if (bIsLocked)
-	{
-		// Handle locked cosmetics
-	}
-	else
-	{
-		bIsBeingHeld = true;
-	}
-}
+	Super::BeginPlay();
 
-void UPivotableComponent::EndInteraction()
-{
-	OnInteractionEnds.Broadcast();
-	bIsBeingHeld = false;
+	TArray<UActorComponent*> AllComponents;
+	GetOwner()->GetComponents(AllComponents);
+
+	for (UActorComponent* Comp : AllComponents)
+	{
+		if (Comp->GetFName() == PivotableParentMeshName)
+		{
+			PivotableParentMeshComponent = Cast<UStaticMeshComponent>(Comp);
+		}
+		else if (Comp->GetFName() == HingeComponentName)
+		{
+			HingeComponent = Cast<USceneComponent>(Comp);
+		}
+		else if (Comp->GetFName() == PhysicsConstraintName)
+		{
+			PhysicsConstraintComponent = Cast<UPhysicsConstraintComponent>(Comp);
+		}
+	}
+
+	if (!PivotableParentMeshComponent)
+	{
+		PivotableParentMeshComponent = Cast<UStaticMeshComponent>(GetAttachParent());
+	}
+
+	if (PivotableParentMeshComponent && HingeComponent)
+	{
+		BaseRotation = PivotableParentMeshComponent->GetComponentRotation();
+		HingeComponent->SetRelativeRotation(HingeStartingRotation);
+		PivotableParentMeshComponent->SetSimulatePhysics(true);
+	}
+
+	if (!bCanClose && PhysicsConstraintComponent)
+	{
+		PhysicsConstraintComponent->SetAngularDriveParams(0.0f, 0.0f, 0.0f);
+		bIsClosed = false;
+		bIsLocked = false;
+	}
 }
 
 void UPivotableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -55,18 +80,121 @@ void UPivotableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	}
 }
 
-bool UPivotableComponent::TryInteractWithItem(FDataTableRowHandle CollectableItemRow)
+bool UPivotableComponent::BeginInteraction(UInteractorComponent* Interactor)
 {
-	// Default behavior: check if the item matches the requirement
+	if (!Super::BeginInteraction(Interactor))
+	{
+		return false;
+	}
+
+	if (bIsLocked)
+	{
+		return false;
+	}
+
+	UPrimitiveComponent* ComponentToHold = PivotableParentMeshComponent ? PivotableParentMeshComponent.Get() : Cast<UPrimitiveComponent>(GetAttachParent());
+	UPhysicsHandleComponent* PhysicsHandle = Interactor->GetPhysicsHandle();
+
+	if (!IsValid(ComponentToHold) || !IsValid(PhysicsHandle))
+	{
+		return false;
+	}
+
+	bIsBeingHeld = true;
+	ComponentToHold->SetSimulatePhysics(true);
+	ComponentToHold->WakeAllRigidBodies();
+
+	TargetHoldLength = FVector::Dist(Interactor->GetComponentLocation(), Interactor->GetReachableTargetHitResult().ImpactPoint);
+	TargetSideLength = 0.0f;
+
+	FVector TargetLocation = Interactor->GetComponentLocation() + (Interactor->GetForwardVector() * TargetHoldLength);
+	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, Interactor->GetComponentRotation());
+	PhysicsHandle->GrabComponentAtLocationWithRotation(
+		ComponentToHold,
+		NAME_None,
+		Interactor->GetReachableTargetHitResult().ImpactPoint,
+		Interactor->GetComponentRotation()
+	);
+
+	if (APlayerController* PC = Interactor->GetPlayerController())
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			if (Interactor->PivotingMappingContext)
+			{
+				Subsystem->AddMappingContext(Interactor->PivotingMappingContext, 5);
+			}
+		}
+	}
+
+	return true;
+}
+
+void UPivotableComponent::ContinueInteraction(UInteractorComponent* Interactor)
+{
+	if (!bIsBeingHeld || !IsValid(Interactor))
+	{
+		return;
+	}
+
+	float CurrentHeldLength = FVector::Dist(Interactor->GetComponentLocation(), GetOwner()->GetActorLocation());
+	if (CurrentHeldLength > Interactor->HoldAutoDropDistance)
+	{
+		EndInteraction(Interactor);
+		return;
+	}
+
+	UPhysicsHandleComponent* PhysicsHandle = Interactor->GetPhysicsHandle();
+	if (IsValid(PhysicsHandle))
+	{
+		FVector StartLoc = Interactor->GetComponentLocation();
+		FVector ForwardLoc = Interactor->GetForwardVector() * TargetHoldLength;
+		FVector SideLoc = Interactor->GetOwner()->GetActorRightVector() * TargetSideLength;
+		FVector TargetLocation = StartLoc + ForwardLoc + SideLoc;
+
+		PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, Interactor->GetComponentRotation());
+	}
+}
+
+void UPivotableComponent::ProcessInputDelta(FVector2D InputDelta, UInteractorComponent* Interactor)
+{
+	if (!bIsBeingHeld)
+	{
+		return;
+	}
+
+	float PushPullSensitivity = 2.0f;
+	float LateralSensitivity = 2.0f;
+
+	TargetHoldLength = FMath::Clamp(TargetHoldLength + (InputDelta.Y * PushPullSensitivity), 50.0f, 300.0f);
+	TargetSideLength = FMath::Clamp(TargetSideLength + (InputDelta.X * LateralSensitivity), -200.0f, 200.0f);
+}
+
+void UPivotableComponent::EndInteraction(UInteractorComponent* Interactor)
+{
+	Super::EndInteraction(Interactor);
+
+	bIsBeingHeld = false;
+
+	if (IsValid(Interactor))
+	{
+		UPhysicsHandleComponent* PhysicsHandle = Interactor->GetPhysicsHandle();
+		if (IsValid(PhysicsHandle) && PhysicsHandle->GetGrabbedComponent())
+		{
+			PhysicsHandle->ReleaseComponent();
+		}
+	}
+}
+
+bool UPivotableComponent::TryInteractWithItem(const FDataTableRowHandle& CollectableItemRow, UInteractorComponent* Interactor)
+{
 	if (!InteractableItem.IsNull() && CollectableItemRow == InteractableItem)
 	{
 		if (bIsLocked)
 		{
 			bIsLocked = false;
-			// Handle unlocking cosmetics
 			OnUnlocked();
 
-			// Chain-unlock matching sibling doors or other pivotables on same Actor
 			if (AActor* Owner = GetOwner())
 			{
 				TArray<UPivotableComponent*> SiblingComponents;
@@ -77,70 +205,29 @@ bool UPivotableComponent::TryInteractWithItem(FDataTableRowHandle CollectableIte
 					if (Sibling && (Sibling != this) && Sibling->bIsLocked && (Sibling->InteractableItem == InteractableItem))
 					{
 						Sibling->bIsLocked = false;
-						// Only call one OnUnlocked() to avoid multiple cosmetic triggers if needed
-						// Sibling->OnUnlocked();
 					}
 				}
 			}
 		}
 		OnInteractWithItem.Broadcast();
-		return true; // Authorizes consuming the key
+		return true;
 	}
 	return false;
 }
 
-void UPivotableComponent::BeginPlay()
+bool UPivotableComponent::IsBoundToMesh(UPrimitiveComponent* HitMesh) const
 {
-	Super::BeginPlay();
-
-	// Retrieve all components attached to the owning actor
-	TArray<UActorComponent*> AllComponents;
-	GetOwner()->GetComponents(AllComponents);
-
-	// Iterate through and match the FNames
-	for (UActorComponent* Comp : AllComponents)
+	if (!IsValid(HitMesh))
 	{
-		if (Comp->GetFName() == PivotableParentMeshName)
-		{
-			PivotableParentMeshComponent = Cast<UStaticMeshComponent>(Comp);
-		}
-		else if (Comp->GetFName() == HingeComponentName)
-		{
-			HingeComponent = Cast<USceneComponent>(Comp);
-		}
-		else if (Comp->GetFName() == PhysicsConstraintName)
-		{
-			PhysicsConstraintComponent = Cast<UPhysicsConstraintComponent>(Comp);
-		}
+		return false;
 	}
 
-	// Validate pointers assigned in the editor to prevent dereferencing null
-	if (!PivotableParentMeshComponent)
+	if (PivotableParentMeshComponent && HitMesh == PivotableParentMeshComponent)
 	{
-		UE_LOG(LogInteraction, Error, TEXT("PivotableComponent: PivotableParentMeshComponent is not assigned on actor %s"), *GetOwner()->GetName());
-	}
-	if (!HingeComponent)
-	{
-		UE_LOG(LogInteraction, Error, TEXT("PivotableComponent: HingeComponent is not assigned on actor %s"), *GetOwner()->GetName());
-	}
-	if (!PhysicsConstraintComponent)
-	{
-		UE_LOG(LogInteraction, Error, TEXT("PivotableComponent: PhysicsConstraintComponent is not assigned on actor %s"), *GetOwner()->GetName());
+		return true;
 	}
 
-	if (PivotableParentMeshComponent && HingeComponent)
-	{
-		BaseRotation = PivotableParentMeshComponent->GetComponentRotation();
-		HingeComponent->SetRelativeRotation(HingeStartingRotation);
-		PivotableParentMeshComponent->SetSimulatePhysics(true);
-	}
-	// Prevents locking a door that shouldn't close and ensures the door can always swing
-	if (!bCanClose && PhysicsConstraintComponent)
-	{
-		PhysicsConstraintComponent->SetAngularDriveParams(0.0f, 0.0f, 0.0f);
-		bIsClosed = false;
-		bIsLocked = false;
-	}
+	return Super::IsBoundToMesh(HitMesh);
 }
 
 void UPivotableComponent::UpdateClosedState()
@@ -159,5 +246,5 @@ void UPivotableComponent::UpdateClosedState()
 
 void UPivotableComponent::OnUnlocked()
 {
-	UE_LOG(LogInteraction, Display, TEXT("Unlocking cosmetics"));
+	UE_LOG(LogInteraction, Display, TEXT("Unlocking cosmetics executed."));
 }

@@ -6,10 +6,7 @@
 #include "Interaction/InteractableComponent.h"
 #include "HoldableComponent.generated.h"
 
-/**
- * 
- */
-UCLASS(ClassGroup = (Interactable), meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Interaction), meta = (BlueprintSpawnableComponent))
 class SCARESPACE_API UHoldableComponent : public UInteractableComponent
 {
 	GENERATED_BODY()
@@ -17,19 +14,16 @@ class SCARESPACE_API UHoldableComponent : public UInteractableComponent
 public:
 	UHoldableComponent();
 
-	// Called when interaction is set to begin
-	virtual void BeginInteraction() override;
-
-	// Called when interaction is set to end
-	virtual void EndInteraction() override;
+	virtual bool BeginInteraction(UInteractorComponent* Interactor) override;
+	virtual void ContinueInteraction(UInteractorComponent* Interactor) override;
+	virtual void EndInteraction(UInteractorComponent* Interactor) override;
+	virtual void OnThrow(UInteractorComponent* Interactor) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
 	bool bIsBreakable = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
 	float BreakForce = 1000.0f;
-
-
 
 protected:
 	virtual void BeginPlay() override;
@@ -38,7 +32,6 @@ protected:
 	void OnMeshComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
-	// Cannot break when being held
 	bool bIsBeingHeld = false;
-	
+	float TargetHoldLength = 0.0f;
 };

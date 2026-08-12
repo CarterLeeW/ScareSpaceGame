@@ -3,50 +3,41 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Components/SceneComponent.h"
+#include "Engine/DataTable.h"
 #include "InteractableComponent.generated.h"
+
+class UInteractorComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractionBegins);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractionEnds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractWithItem);
 
-/* Label for the type of interactable component */
-UENUM(BlueprintType)
-enum class EInteractableType : uint8
-{
-	Collectable,
-	Holdable,
-	Pivotable,
-	Slidable,
-	ItemOnly
-};
-
-UCLASS(Abstract, Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class SCARESPACE_API UInteractableComponent : public UActorComponent
+UCLASS(Abstract, Blueprintable, BlueprintType, ClassGroup = (Interaction), meta = (BlueprintSpawnableComponent))
+class SCARESPACE_API UInteractableComponent : public USceneComponent
 {
 	GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
+public:
 	UInteractableComponent();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactable")
-	EInteractableType InteractableType;
+	// Polymorphic interaction hooks
+	virtual bool CanInteract(UInteractorComponent* Interactor) const;
+	virtual bool BeginInteraction(UInteractorComponent* Interactor);
+	virtual void ContinueInteraction(UInteractorComponent* Interactor);
+	virtual void EndInteraction(UInteractorComponent* Interactor);
+	virtual void ProcessInputDelta(FVector2D InputDelta, UInteractorComponent* Interactor);
+	virtual void OnThrow(UInteractorComponent* Interactor);
 
-	// Called when interaction is set to begin
-	UFUNCTION(BlueprintCallable)
-	virtual void BeginInteraction();
+	// Item handling
+	virtual bool QuickValidateItemInteraction(const FDataTableRowHandle& CollectableItemRow) const;
+	virtual bool TryInteractWithItem(const FDataTableRowHandle& CollectableItemRow, UInteractorComponent* Interactor);
 
-	// Called when interaction is set to end
-	UFUNCTION(BlueprintCallable)
-	virtual void EndInteraction();
+	// Target resolution
+	virtual bool IsBoundToMesh(UPrimitiveComponent* HitMesh) const;
 
-	UFUNCTION(BlueprintCallable)
-	virtual bool QuickValidateItemInteraction(FDataTableRowHandle CollectableItemRow);
-
-	// Called when an interaction is performed with an item
-	UFUNCTION(BlueprintCallable, Category = "Interaction")
-	virtual bool TryInteractWithItem(FDataTableRowHandle CollectableItemRow);
+	// UI & Audio
+	virtual UTexture2D* GetInteractionIcon(UInteractorComponent* Interactor) const;
 
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnInteractWithItem OnInteractWithItem;
@@ -57,16 +48,16 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnInteractionEnds OnInteractionEnds;
 
-	// HUD icon for this interactable
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction|UI")
 	TObjectPtr<UTexture2D> InteractionIcon;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Interaction")
 	uint8 InteractionCounter = 0;
 
 protected:
-	// Items that may cause an interaction to occur. If empty, no interaction will occur anyway
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction|Lock/Item")
 	FDataTableRowHandle InteractableItem;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction|Lock/Item")
+	bool bCanAcceptItem = true;
 };

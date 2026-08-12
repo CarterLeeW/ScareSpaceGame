@@ -1,69 +1,157 @@
 // Copyright Carter Wooton
 
-
 #include "Interaction/HoldableComponent.h"
+#include "Interaction/InteractorComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "GameFramework/PlayerController.h"
 #include "Logging/ScareSpaceLogs.h"
 
 UHoldableComponent::UHoldableComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	PrimaryComponentTick.bStartWithTickEnabled = false;
-	InteractableType = EInteractableType::Holdable;
-}
-
-void UHoldableComponent::BeginInteraction()
-{
-	InteractionCounter = FMath::Clamp(InteractionCounter + 1, 0, 255);
-	OnInteractionBegins.Broadcast();
-	bIsBeingHeld = true;
-	// Disable blocking collision with pawns so that the player can walk through the object and not stand on it etc.
-	if (UStaticMeshComponent* Mesh = GetOwner()->GetComponentByClass<UStaticMeshComponent>())
-	{
-		Mesh->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	}
-}
-
-void UHoldableComponent::EndInteraction()
-{
-	OnInteractionEnds.Broadcast();
-	bIsBeingHeld = false;
-	if (AActor* Owner = GetOwner())
-	{
-		// not reliable, does not show the items velocity after the impulse is applied
-		FVector Velocity = Owner->GetVelocity();
-		UE_LOG(LogInteraction, Display, TEXT("object velocity: %s"), *Velocity.ToString());
-	}
-	
-	// Re-enable blocking collision with pawns
-	if (UStaticMeshComponent* Mesh = GetOwner()->GetComponentByClass<UStaticMeshComponent>())
-	{
-		Mesh->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Block);
-	}
-	// TODO: Delegate functionality is currently unnecessary
-	/*InteractionEnded.Broadcast();
-	InteractionEnded.Clear();*/
 }
 
 void UHoldableComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Bind OnComponentHit
-	if (UStaticMeshComponent* Mesh = GetOwner()->GetComponentByClass<UStaticMeshComponent>())
+	if (UStaticMeshComponent* Mesh = GetOwner()->FindComponentByClass<UStaticMeshComponent>())
 	{
 		Mesh->OnComponentHit.AddDynamic(this, &UHoldableComponent::OnMeshComponentHit);
 	}
 }
 
+bool UHoldableComponent::BeginInteraction(UInteractorComponent* Interactor)
+{
+	if (!Super::BeginInteraction(Interactor))
+	{
+		return false;
+	}
+
+	UPrimitiveComponent* ComponentToHold = Interactor->GetReachableTargetHitResult().GetComponent();
+	UPhysicsHandleComponent* PhysicsHandle = Interactor->GetPhysicsHandle();
+
+	if (!IsValid(ComponentToHold) || !IsValid(PhysicsHandle))
+	{
+		return false;
+	}
+
+	bIsBeingHeld = true;
+	ComponentToHold->SetSimulatePhysics(true);
+	ComponentToHold->WakeAllRigidBodies();
+
+	if (UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(ComponentToHold))
+	{
+		Mesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	}
+
+	TargetHoldLength = FVector::Dist(Interactor->GetComponentLocation(), Interactor->GetReachableTargetHitResult().ImpactPoint);
+	FVector TargetLocation = Interactor->GetComponentLocation() + (Interactor->GetForwardVector() * TargetHoldLength);
+
+	PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, Interactor->GetComponentRotation());
+	PhysicsHandle->GrabComponentAtLocationWithRotation(
+		ComponentToHold,
+		NAME_None,
+		Interactor->GetReachableTargetHitResult().ImpactPoint,
+		Interactor->GetComponentRotation()
+	);
+
+	if (APlayerController* PC = Interactor->GetPlayerController())
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			if (Interactor->HoldingObjectMappingContext)
+			{
+				Subsystem->AddMappingContext(Interactor->HoldingObjectMappingContext, 5);
+			}
+		}
+	}
+
+	return true;
+}
+
+void UHoldableComponent::ContinueInteraction(UInteractorComponent* Interactor)
+{
+	if (!bIsBeingHeld || !IsValid(Interactor))
+	{
+		return;
+	}
+
+	float CurrentHeldLength = FVector::Dist(Interactor->GetComponentLocation(), GetOwner()->GetActorLocation());
+	if (CurrentHeldLength > Interactor->HoldAutoDropDistance)
+	{
+		EndInteraction(Interactor);
+		return;
+	}
+
+	UPhysicsHandleComponent* PhysicsHandle = Interactor->GetPhysicsHandle();
+	if (IsValid(PhysicsHandle))
+	{
+		FVector TargetLocation = Interactor->GetComponentLocation() + (Interactor->GetForwardVector() * TargetHoldLength);
+		PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, Interactor->GetComponentRotation());
+	}
+}
+
+void UHoldableComponent::EndInteraction(UInteractorComponent* Interactor)
+{
+	Super::EndInteraction(Interactor);
+
+	bIsBeingHeld = false;
+
+	if (IsValid(Interactor))
+	{
+		UPhysicsHandleComponent* PhysicsHandle = Interactor->GetPhysicsHandle();
+		if (IsValid(PhysicsHandle) && PhysicsHandle->GetGrabbedComponent())
+		{
+			PhysicsHandle->ReleaseComponent();
+		}
+	}
+
+	if (UStaticMeshComponent* Mesh = GetOwner()->FindComponentByClass<UStaticMeshComponent>())
+	{
+		Mesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+	}
+}
+
+void UHoldableComponent::OnThrow(UInteractorComponent* Interactor)
+{
+	if (!IsValid(Interactor))
+	{
+		return;
+	}
+
+	UPhysicsHandleComponent* PhysicsHandle = Interactor->GetPhysicsHandle();
+	if (!IsValid(PhysicsHandle) || !PhysicsHandle->GetGrabbedComponent())
+	{
+		return;
+	}
+
+	UPrimitiveComponent* ComponentToThrow = PhysicsHandle->GetGrabbedComponent();
+	if (!IsValid(ComponentToThrow))
+	{
+		return;
+	}
+
+	float ObjectMass = ComponentToThrow->GetMass();
+	ComponentToThrow->SetSimulatePhysics(true);
+	ComponentToThrow->WakeAllRigidBodies();
+
+	FVector Forward = Interactor->GetForwardVector();
+	FVector ThrowDirection = (Forward + FVector::UpVector * 0.2f).GetSafeNormal();
+	FVector ThrowVelocity = (ThrowDirection * TargetHoldLength * Interactor->ThrowForceMultiplier) / ObjectMass;
+
+	ComponentToThrow->AddImpulse(ThrowVelocity, NAME_None, true);
+
+	PhysicsHandle->ReleaseComponent();
+	EndInteraction(Interactor);
+}
+
 void UHoldableComponent::OnMeshComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// Example: Log the hit event
-	//UE_LOG(LogInteraction, Display, TEXT("HoldableComponent was hit by %s"), *GetNameSafe(OtherActor));
 	if (bIsBreakable && (NormalImpulse.Length() > BreakForce))
 	{
-		// breaks
-		// TODO: Breakable needs to be its own component using chaos physics
-
+		// Chaos physics breakage interface call goes here
 	}
 }

@@ -6,7 +6,6 @@
 #include "Interaction/InteractableComponent.h"
 #include "CollectableComponent.generated.h"
 
-/* Label for the type of collectable component */
 UENUM(BlueprintType)
 enum class ECollectableType : uint8
 {
@@ -14,10 +13,7 @@ enum class ECollectableType : uint8
 	Journal
 };
 
-/**
- * 
- */
-UCLASS(ClassGroup = (Interactable), meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Interaction), meta = (BlueprintSpawnableComponent))
 class SCARESPACE_API UCollectableComponent : public UInteractableComponent
 {
 	GENERATED_BODY()
@@ -25,8 +21,7 @@ class SCARESPACE_API UCollectableComponent : public UInteractableComponent
 public:
 	UCollectableComponent();
 
-	// Called when interaction is set to begin
-	virtual void BeginInteraction() override;
+	virtual bool BeginInteraction(UInteractorComponent* Interactor) override;
 
 	UFUNCTION(BlueprintPure)
 	FDataTableRowHandle GetItemRow() const { return CollectableItemRow; }
@@ -35,11 +30,9 @@ public:
 	ECollectableType GetCollectableType() const { return CollectableType; }
 
 private:
-	// Item row that this collectable represents. This is used to determine what item is being collected when the player interacts with it.
 	UPROPERTY(EditAnywhere, Category = "Collectable")
 	FDataTableRowHandle CollectableItemRow;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Collectable")
 	ECollectableType CollectableType = ECollectableType::Inventory;
-	
 };

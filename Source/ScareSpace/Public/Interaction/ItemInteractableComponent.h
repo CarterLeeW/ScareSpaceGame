@@ -6,10 +6,7 @@
 #include "Interaction/InteractableComponent.h"
 #include "ItemInteractableComponent.generated.h"
 
-/**
- * 
- */
-UCLASS(ClassGroup = (Interactable), meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Interaction), meta = (BlueprintSpawnableComponent))
 class SCARESPACE_API UItemInteractableComponent : public UInteractableComponent
 {
 	GENERATED_BODY()
@@ -17,13 +14,15 @@ class SCARESPACE_API UItemInteractableComponent : public UInteractableComponent
 public:
 	UItemInteractableComponent();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInteractable|Components")
-	FName ItemOnlyParentMeshName;
+	virtual bool IsBoundToMesh(UPrimitiveComponent* HitMesh) const override;
 
-	// Resolved pointers accessed by the Interactor Component at runtime
+	// This is a fallback for if this component is not properly made a child of its corresponding component
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemInteractable|Components")
+	FName ItemOnlyParentComponentName;
+
 	UPROPERTY(BlueprintReadOnly, Transient, Category = "ItemInteractable|Components")
 	TObjectPtr<UActorComponent> ItemOnlyParentComponent;
-	
+
 protected:
 	virtual void BeginPlay() override;
 };
