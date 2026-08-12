@@ -24,6 +24,7 @@ public:
 	virtual void ProcessInputDelta(FVector2D InputDelta, UInteractorComponent* Interactor) override;
 	virtual bool TryInteractWithItem(const FDataTableRowHandle& CollectableItemRow, UInteractorComponent* Interactor) override;
 	virtual bool IsBoundToMesh(UPrimitiveComponent* HitMesh) const override;
+	virtual void OnThrow(UInteractorComponent* Interactor) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pivotable|Components")
 	FName PivotableParentMeshName;

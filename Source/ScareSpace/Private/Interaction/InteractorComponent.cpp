@@ -182,6 +182,8 @@ void UInteractorComponent::ThrowObject()
 	if (bIsInteracting && CurrentInteractableComponent.IsValid())
 	{
 		CurrentInteractableComponent->OnThrow(this);
+
+		RequestEndInteraction();
 	}
 }
 

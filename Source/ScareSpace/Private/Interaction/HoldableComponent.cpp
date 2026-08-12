@@ -143,9 +143,6 @@ void UHoldableComponent::OnThrow(UInteractorComponent* Interactor)
 	FVector ThrowVelocity = (ThrowDirection * TargetHoldLength * Interactor->ThrowForceMultiplier) / ObjectMass;
 
 	ComponentToThrow->AddImpulse(ThrowVelocity, NAME_None, true);
-
-	PhysicsHandle->ReleaseComponent();
-	EndInteraction(Interactor);
 }
 
 void UHoldableComponent::OnMeshComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)

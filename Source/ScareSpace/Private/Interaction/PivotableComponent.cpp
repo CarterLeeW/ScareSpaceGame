@@ -230,6 +230,34 @@ bool UPivotableComponent::IsBoundToMesh(UPrimitiveComponent* HitMesh) const
 	return Super::IsBoundToMesh(HitMesh);
 }
 
+void UPivotableComponent::OnThrow(UInteractorComponent* Interactor)
+{
+	if (!IsValid(Interactor)) return;
+
+	UPhysicsHandleComponent* PhysicsHandle = Interactor->GetPhysicsHandle();
+	if (!IsValid(PhysicsHandle) || !PhysicsHandle->GetGrabbedComponent()) return;
+
+	UPrimitiveComponent* ComponentToThrow = PhysicsHandle->GetGrabbedComponent();
+	if (!IsValid(ComponentToThrow)) return;
+
+	// Wake the physics body just in case it went to sleep while holding
+	ComponentToThrow->WakeAllRigidBodies();
+
+	float ObjectMass = ComponentToThrow->GetMass();
+	float PivotThrowMultiplier = 0.5f;
+
+	// Calculate the raw impulse force
+	FVector Forward = Interactor->GetForwardVector();
+	FVector ThrowImpulse = Forward * TargetHoldLength * Interactor->ThrowForceMultiplier * PivotThrowMultiplier * ObjectMass;
+
+	// Find exactly where the player is currently holding the door
+	FVector GrabLocation = Interactor->GetComponentLocation() + (Forward * TargetHoldLength);
+
+	// Apply the force at the grab location to generate proper leverage/torque around the hinge
+	ComponentToThrow->AddImpulseAtLocation(ThrowImpulse, GrabLocation, NAME_None);
+
+}
+
 void UPivotableComponent::UpdateClosedState()
 {
 	if (!PivotableParentMeshComponent)
