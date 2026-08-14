@@ -3,6 +3,7 @@
 #include "Interaction/RotatableComponent.h"
 #include "Interaction/InteractorComponent.h"
 #include "Components/SceneComponent.h"
+#include "EnhancedInputSubsystems.h"
 
 URotatableComponent::URotatableComponent()
 {
@@ -30,7 +31,6 @@ void URotatableComponent::BeginPlay()
 		RotatableMeshComponent = GetAttachParent();
 	}
 
-	// Store the initial rotation as a Quaternion to act as our mathematical zero-point
 	if (RotatableMeshComponent)
 	{
 		BaseRotationQuat = RotatableMeshComponent->GetRelativeRotation().Quaternion();
@@ -50,7 +50,37 @@ bool URotatableComponent::BeginInteraction(UInteractorComponent* Interactor)
 	}
 
 	bIsBeingHeld = true;
+
+	VirtualMousePosition = FVector2D(0.0f, -100.0f);
+	PreviousMouseAngle = FMath::Atan2(VirtualMousePosition.Y, VirtualMousePosition.X);
+
+	if (APlayerController* PC = Interactor->GetPlayerController())
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			// Reusing PivotingMappingContext since it already contains your mouse X/Y delta bindings
+			if (Interactor->PivotingMappingContext)
+			{
+				Subsystem->AddMappingContext(Interactor->PivotingMappingContext, 5);
+			}
+		}
+	}
+
 	return true;
+}
+
+void URotatableComponent::ContinueInteraction(UInteractorComponent* Interactor)
+{
+	if (!bIsBeingHeld || !IsValid(Interactor))
+	{
+		return;
+	}
+
+	float CurrentHeldLength = FVector::Dist(Interactor->GetComponentLocation(), GetOwner()->GetActorLocation());
+	if (CurrentHeldLength > Interactor->HoldAutoDropDistance)
+	{
+		Interactor->RequestEndInteraction();
+	}
 }
 
 void URotatableComponent::EndInteraction(UInteractorComponent* Interactor)
@@ -66,44 +96,50 @@ void URotatableComponent::ProcessInputDelta(FVector2D InputDelta, UInteractorCom
 		return;
 	}
 
-	// 1. Calculate the rotation change (using mouse X-axis for crank turning)
-	float DeltaAngle = InputDelta.X * RotationSensitivity;
+	// Calculate pure visual mouse movement
+	VirtualMousePosition.X += InputDelta.X * RotationSensitivity;
+	VirtualMousePosition.Y += InputDelta.Y * RotationSensitivity;
+	VirtualMousePosition = VirtualMousePosition.GetSafeNormal() * 100.0f;
 
-	// Security: Clamp extreme input spikes to prevent the crank from jumping past limits in a single frame
-	DeltaAngle = FMath::Clamp(DeltaAngle, -45.0f, 45.0f);
+	float CurrentMouseAngle = FMath::Atan2(VirtualMousePosition.Y, VirtualMousePosition.X);
+	float DeltaAngleRad = CurrentMouseAngle - PreviousMouseAngle;
+	DeltaAngleRad = FMath::Atan2(FMath::Sin(DeltaAngleRad), FMath::Cos(DeltaAngleRad));
 
-	// 2. Accumulate the total angle
-	CurrentAngle += DeltaAngle;
+	// A clockwise mouse movement on screen results in a positive VisualDelta
+	float VisualDelta = FMath::RadiansToDegrees(DeltaAngleRad);
+	PreviousMouseAngle = CurrentMouseAngle;
 
-	// 3. Apply limits if configured
+	// Identify the local axis of the mesh
+	FVector LocalAxisVector = FVector::ZeroVector;
+	switch (RotationAxis)
+	{
+	case ERotationAxis::Pitch: LocalAxisVector = FVector(0.0f, 1.0f, 0.0f); break;
+	case ERotationAxis::Yaw:   LocalAxisVector = FVector(0.0f, 0.0f, 1.0f); break;
+	case ERotationAxis::Roll:  LocalAxisVector = FVector(1.0f, 0.0f, 0.0f); break;
+	}
+
+	// Determine perspective multipliers
+	FVector WorldAxisVector = RotatableMeshComponent->GetComponentTransform().TransformVectorNoScale(LocalAxisVector);
+	FVector PlayerForward = Interactor->GetForwardVector();
+
+	float PerspectiveMultiplier = FVector::DotProduct(PlayerForward, WorldAxisVector) < 0.0f ? -1.0f : 1.0f;
+	float InvertMultiplier = bInvertRotation ? -1.0f : 1.0f;
+
+	// Update the rotation progress based on perspective and inversion settings
+	CurrentAngle += (VisualDelta * PerspectiveMultiplier * InvertMultiplier);
+
 	if (bHasLimits)
 	{
 		CurrentAngle = FMath::Clamp(CurrentAngle, MinAngle, MaxAngle);
+		OnRotated.Broadcast(CurrentAngle);
 	}
 
-	// 4. Construct the rotational axis vector
-	FVector AxisVector = FVector::ZeroVector;
-	switch (RotationAxis)
-	{
-		case ERotationAxis::Pitch:
-		{
-			AxisVector = FVector(0.0f, 1.0f, 0.0f);
-			break;
-		}
-		case ERotationAxis::Yaw:
-		{
-			AxisVector = FVector(0.0f, 0.0f, 1.0f);
-			break;
-		}
-		case ERotationAxis::Roll:
-		{
-			AxisVector = FVector(1.0f, 0.0f, 0.0f);
-			break;
-		}
-	}
+	// Apply the rotation to the physical mesh. 
+	// Re-apply the InvertMultiplier so the visual spin matches the mouse gesture, 
+	// while keeping CurrentAngle safely within positive limits.
+	float AppliedMeshAngle = CurrentAngle * InvertMultiplier;
 
-	// 5. Build a pure Quaternion representing the exact local offset, and multiply it by the baseline
-	FQuat DeltaQuat(AxisVector, FMath::DegreesToRadians(CurrentAngle));
+	FQuat DeltaQuat(LocalAxisVector, FMath::DegreesToRadians(AppliedMeshAngle));
 	FQuat NewRotation = BaseRotationQuat * DeltaQuat;
 
 	RotatableMeshComponent->SetRelativeRotation(NewRotation);

@@ -82,12 +82,12 @@ public:
 	bool IsHoldingInventoryItem() const { return bHoldingItem; }
 
 	void StopHoldingItem();
+	void RequestEndInteraction();
 
 protected:
 	virtual void BeginPlay() override;
 
 	void BeginInteraction();
-	void RequestEndInteraction();
 	void ContinueInteraction();
 	void ThrowObject();
 	void ProcessLateralOffset(const FInputActionValue& Value);
