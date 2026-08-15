@@ -134,7 +134,7 @@ void UInteractorComponent::BeginInteraction()
 		return;
 	}
 
-	if (Target->BeginInteraction(this))
+	if (Target->bCanInteract && Target->BeginInteraction(this))
 	{
 		CurrentInteractableComponent = Target;
 		bIsInteracting = true;

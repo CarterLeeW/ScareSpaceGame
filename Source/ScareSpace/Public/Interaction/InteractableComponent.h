@@ -39,6 +39,9 @@ public:
 	// UI & Audio
 	virtual UTexture2D* GetInteractionIcon(UInteractorComponent* Interactor) const;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
+	bool bCanInteract = true;
+
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnInteractWithItem OnInteractWithItem;
 

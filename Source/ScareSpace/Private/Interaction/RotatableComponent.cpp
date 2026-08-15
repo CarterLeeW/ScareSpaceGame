@@ -91,7 +91,7 @@ void URotatableComponent::EndInteraction(UInteractorComponent* Interactor)
 
 void URotatableComponent::ProcessInputDelta(FVector2D InputDelta, UInteractorComponent* Interactor)
 {
-	if (!bIsBeingHeld || !IsValid(RotatableMeshComponent))
+	if (!bIsBeingHeld || !IsValid(RotatableMeshComponent) || !bCanRotate)
 	{
 		return;
 	}

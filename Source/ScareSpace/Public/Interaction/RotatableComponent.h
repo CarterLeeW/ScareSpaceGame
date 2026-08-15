@@ -45,6 +45,9 @@ public:
 	// Allows configuration of reversed controls per-mesh
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rotatable|Settings")
 	bool bInvertRotation = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rotatable|Settings")
+	bool bCanRotate = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rotatable|Limits")
 	bool bHasLimits = true;
