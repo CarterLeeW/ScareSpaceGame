@@ -13,20 +13,21 @@ enum class EStoryPhase : uint8
     // Advancing to a new phase will likely cause a memo reset to represent the new objectives and clean old ones
     ArriveAtHouse = 0, // Between getting out of the car and entering the back door
     StartBasementFire, // player can find key to back door without trying to unlock it first
-    TagItems,
-    LeaveHouse, // Includes snowed-in sequence
+    FeedCat,
+    BringInMail,
     GoToBed,
     GetWater,
     WatchTV,
-    PowerOutage,
-    FindFlashlight, // optional?
     CheckGenerator,
     FindGeneratorFuel,
-    AnswerPhone,
+    StartGenerator,
+    AnswerPhone1,
     FindCabinetKey,
     RetrieveGrimoire,
-    FleeToSubBasement,
-    PerformRitual,
+    AnswerPhone2,
+    UnlockSubBasementDoor,
+    FleeMonster,
+    ExplorePrison,
 
     // Required for bounds checking during save/load
     MAX
@@ -64,6 +65,9 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Progression")
     void AdvanceToPhase(EStoryPhase NextPhase);
+
+    UFUNCTION(BlueprintCallable, Category = "Progression")
+    void SetPhaseForce(EStoryPhase NextPhase);
 
     UFUNCTION(BlueprintCallable, Category = "Progression")
     bool ValidateAndLoadPhase(uint8 LoadedStateValue);

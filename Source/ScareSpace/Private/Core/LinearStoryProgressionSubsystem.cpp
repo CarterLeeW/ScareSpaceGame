@@ -34,6 +34,13 @@ void ULinearStoryProgressionSubsystem::AdvanceToPhase(EStoryPhase NextPhase)
     }
 }
 
+// Forces phase to change - mostly for debugging
+void ULinearStoryProgressionSubsystem::SetPhaseForce(EStoryPhase NextPhase)
+{
+    CurrentPhase = NextPhase;
+    OnStoryPhaseAdvanced.Broadcast(CurrentPhase);
+}
+
 bool ULinearStoryProgressionSubsystem::ValidateAndLoadPhase(uint8 LoadedStateValue)
 {
     // Ensure the loaded value does not exceed the maximum valid enum definition
