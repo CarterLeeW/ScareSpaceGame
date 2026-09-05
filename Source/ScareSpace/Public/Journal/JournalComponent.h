@@ -47,6 +47,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Journal")
 	bool RemoveItemFromJournal(FDataTableRowHandle CollectableItemRow);
+	UFUNCTION(BlueprintCallable, Category = "Journal")
+	bool ClearMementosFromJournal();
 	UFUNCTION()
 	void HandleJournalEntryRemoveRequested(FDataTableRowHandle CollectableItemRow);
 

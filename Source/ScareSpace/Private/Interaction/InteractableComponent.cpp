@@ -20,6 +20,10 @@ bool UInteractableComponent::BeginInteraction(UInteractorComponent* Interactor)
 	{
 		return false;
 	}
+	if (!bCanInteract)
+	{
+		return false;
+	}
 
 	InteractionCounter = FMath::Clamp(InteractionCounter + 1, 0, 255);
 	OnInteractionBegins.Broadcast();

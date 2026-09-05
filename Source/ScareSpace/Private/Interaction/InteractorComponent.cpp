@@ -251,7 +251,7 @@ void UInteractorComponent::UpdateInteractionPrompt()
 			bIsTargetValid = true;
 		}
 	}
-	else if (!bIsInteracting && HoveredInteractableComponent.IsValid())
+	else if (!bIsInteracting && HoveredInteractableComponent.IsValid() && HoveredInteractableComponent->bCanInteract)
 	{
 		// Standard interaction (no item held)
 		CurrentIcon = HoveredInteractableComponent->GetInteractionIcon(this);

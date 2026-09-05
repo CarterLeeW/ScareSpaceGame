@@ -119,6 +119,23 @@ bool UJournalComponent::RemoveItemFromJournal(FDataTableRowHandle CollectableIte
 	return false;
 }
 
+bool UJournalComponent::ClearMementosFromJournal()
+{
+	// Remove all items that are mementos
+	for (int32 i = JournalItems.Num() - 1; i >= 0; --i)
+	{
+		FDataTableRowHandle ItemRow = JournalItems[i];
+		if (FItemDataJournal* FoundItem = ItemRow.GetRow<FItemDataJournal>(TEXT("JournalComponent clear mementos from journal")))
+		{
+			if (FoundItem->JournalItemSubtype == EJournalItemType::Memento)
+			{
+				JournalItems.RemoveAt(i);
+			}
+		}
+	}
+	return false;
+}
+
 void UJournalComponent::HandleJournalEntryRemoveRequested(FDataTableRowHandle CollectableItemRow)
 {
 	// check that we have this journal item
