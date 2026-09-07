@@ -26,7 +26,7 @@ bool UInteractableComponent::BeginInteraction(UInteractorComponent* Interactor)
 	}
 
 	InteractionCounter = FMath::Clamp(InteractionCounter + 1, 0, 255);
-	OnInteractionBegins.Broadcast();
+	OnInteractionBegins.Broadcast(Interactor);
 	return true;
 }
 
@@ -36,7 +36,7 @@ void UInteractableComponent::ContinueInteraction(UInteractorComponent* Interacto
 
 void UInteractableComponent::EndInteraction(UInteractorComponent* Interactor)
 {
-	OnInteractionEnds.Broadcast();
+	OnInteractionEnds.Broadcast(Interactor);
 }
 
 void UInteractableComponent::ProcessInputDelta(FVector2D InputDelta, UInteractorComponent* Interactor)
@@ -64,7 +64,7 @@ bool UInteractableComponent::TryInteractWithItem(const FDataTableRowHandle& Coll
 	}
 	if (!InteractableItem.IsNull() && CollectableItemRow == InteractableItem)
 	{
-		OnInteractWithItem.Broadcast();
+		OnInteractWithItem.Broadcast(Interactor);
 		return true;
 	}
 	return false;

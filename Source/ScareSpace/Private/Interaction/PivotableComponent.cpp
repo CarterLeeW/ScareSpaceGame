@@ -209,7 +209,7 @@ bool UPivotableComponent::TryInteractWithItem(const FDataTableRowHandle& Collect
 				}
 			}
 		}
-		OnInteractWithItem.Broadcast();
+		OnInteractWithItem.Broadcast(Interactor);
 		return true;
 	}
 	return false;

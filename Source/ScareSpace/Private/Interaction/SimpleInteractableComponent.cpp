@@ -12,7 +12,7 @@ bool USimpleInteractableComponent::BeginInteraction(UInteractorComponent* Intera
 	}
 
 	Super::BeginInteraction(Interactor);
-	OnInteracted.Broadcast();
+	OnInteracted.Broadcast(Interactor);
 
 	// Interactory should not transition into interacting state
 	return false;

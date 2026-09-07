@@ -9,9 +9,9 @@
 
 class UInteractorComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractionBegins);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractionEnds);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractWithItem);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteractionBegins, UInteractorComponent*, Interactor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteractionEnds, UInteractorComponent*, Interactor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteractWithItem, UInteractorComponent*, Interactor);
 
 UCLASS(Abstract, Blueprintable, BlueprintType, ClassGroup = (Interaction), meta = (BlueprintSpawnableComponent))
 class SCARESPACE_API UInteractableComponent : public USceneComponent

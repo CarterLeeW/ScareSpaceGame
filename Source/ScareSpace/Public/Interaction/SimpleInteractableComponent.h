@@ -7,7 +7,7 @@
 #include "SimpleInteractableComponent.generated.h"
 
 // Delegate for wiring up Blueprint logic
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSimpleInteract);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSimpleInteract, UInteractorComponent*, Interactor);
 
 UCLASS(ClassGroup = (Interaction), meta = (BlueprintSpawnableComponent))
 class SCARESPACE_API USimpleInteractableComponent : public UInteractableComponent
