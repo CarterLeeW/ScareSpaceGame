@@ -12,7 +12,7 @@ class UInputAction;
 /**
  * 
  */
-UCLASS()
+UCLASS(ClassGroup = (Gameplay), meta = (BlueprintSpawnableComponent))
 class SCARESPACE_API USimpleFlashlightComponent : public USpotLightComponent
 {
 	GENERATED_BODY()
@@ -40,6 +40,11 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio", meta = (AllowPrivateAccess = "true"))
+	USoundBase* FlashlightOnSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio", meta = (AllowPrivateAccess = "true"))
+	USoundBase* FlashlightOffSound;
 
 private:
 	bool bIsOn = false;

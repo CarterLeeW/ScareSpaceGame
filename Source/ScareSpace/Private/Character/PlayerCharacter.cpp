@@ -15,6 +15,7 @@
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Inventory/InventoryComponent.h"
 #include "Journal/JournalComponent.h"
+#include "Gameplay/SimpleFlashlightComponent.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -40,6 +41,10 @@ APlayerCharacter::APlayerCharacter()
 	// Interactor Component
 	InteractorComponent = CreateDefaultSubobject<UInteractorComponent>(TEXT("InteractorComponent"));
 	InteractorComponent->SetupAttachment(FirstPersonCameraComponent);
+
+	// Flashlight Component
+	FlashlightComponent = CreateDefaultSubobject<USimpleFlashlightComponent>(TEXT("FlashlightComponent"));
+	FlashlightComponent->SetupAttachment(FirstPersonCameraComponent);
 
 	// Physics Handle Component
 	PhysicsHandleComponent = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandleComponent"));

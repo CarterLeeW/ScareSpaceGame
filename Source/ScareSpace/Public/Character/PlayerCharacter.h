@@ -16,6 +16,7 @@ class UPhysicsHandleComponent;
 struct FInputActionValue;
 class UInventoryComponent;
 class UJournalComponent;
+class USimpleFlashlightComponent;
 
 
 
@@ -70,4 +71,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Journal")
 	TObjectPtr<UJournalComponent> JournalComponent;
 
+	// Simple Flashlight Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Flashlight")
+	TObjectPtr<USimpleFlashlightComponent> FlashlightComponent;
 };
