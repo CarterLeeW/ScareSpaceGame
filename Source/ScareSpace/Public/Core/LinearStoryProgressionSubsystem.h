@@ -18,8 +18,6 @@ enum class EStoryPhase : uint8
     GoToBed,
     GetWater,
     WatchTV,
-    CheckGenerator,
-    FindGeneratorFuel,
     StartGenerator,
     AnswerPhone1,
     FindCabinetKey,
