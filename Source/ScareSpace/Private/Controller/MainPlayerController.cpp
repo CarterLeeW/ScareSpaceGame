@@ -19,12 +19,19 @@ void AMainPlayerController::PlayerTick(float DeltaTime)
 
 }
 
-void AMainPlayerController::SetMenuState(bool bIsMenuOpen, UUserWidget* InventoryWidgetInstance)
+void AMainPlayerController::SetMenuState(bool bIsMenuOpen, UUserWidget* MenuWidgetInstance)
 {
 	if (!InputConfig)
 	{
 		return;
 	}
+
+	// Re-entrancy Guard: Prevent overwriting snapshot if state is already active
+	if (bIsInMenuState == bIsMenuOpen)
+	{
+		return;
+	}
+
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
 		if (bIsMenuOpen)
@@ -50,13 +57,20 @@ void AMainPlayerController::SetMenuState(bool bIsMenuOpen, UUserWidget* Inventor
 			}
 			// 4. Input Mode
 			FInputModeGameAndUI Mode;
-			if (InventoryWidgetInstance)
-			{
-				Mode.SetWidgetToFocus(InventoryWidgetInstance->TakeWidget());
-			}
-			SetInputMode(Mode);
-			InventoryWidgetInstance->SetKeyboardFocus();
 			Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+			if (MenuWidgetInstance && MenuWidgetInstance->IsFocusable())
+			{
+				Mode.SetWidgetToFocus(MenuWidgetInstance->TakeWidget());
+			}
+
+			SetInputMode(Mode);
+
+			if (MenuWidgetInstance)
+			{
+				MenuWidgetInstance->SetKeyboardFocus();
+			}
+
 			bShowMouseCursor = true;
 		}
 		else
@@ -66,9 +80,12 @@ void AMainPlayerController::SetMenuState(bool bIsMenuOpen, UUserWidget* Inventor
 			Subsystem->ClearAllMappings();
 
 			// 2. Restore only what was active before
-			for (const TPair<UInputMappingContext*, int32> Pair : ActiveContextSnapshot)
+			for (const TPair<UInputMappingContext*, int32>& Pair : ActiveContextSnapshot)
 			{
-				Subsystem->AddMappingContext(Pair.Key, Pair.Value);
+				if (Pair.Key)
+				{
+					Subsystem->AddMappingContext(Pair.Key, Pair.Value);
+				}
 			}
 			ActiveContextSnapshot.Empty();
 

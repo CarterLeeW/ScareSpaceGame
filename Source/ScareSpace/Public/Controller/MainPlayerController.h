@@ -60,7 +60,8 @@ public:
 	TMap<UInputMappingContext*, int32> ActiveContextSnapshot;
 
 	// Switches between normal and menu input mappings
-	void SetMenuState(bool bIsMenuOpen, UUserWidget* InventoryWidgetInstance);
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void SetMenuState(bool bIsMenuOpen, UUserWidget* MenuWidgetInstance);
 
 	bool bIsInMenuState = false;
 
