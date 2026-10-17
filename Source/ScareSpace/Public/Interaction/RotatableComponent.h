@@ -59,7 +59,7 @@ public:
 	float MaxAngle = 1080.0f;
 
 	UFUNCTION(BlueprintPure, Category = "Rotatable|State")
-	float GetCurrentAngle() const { return CurrentAngle; }
+	float GetCurrentAngle() const { return CurrentPivotAngle; }
 
 	UPROPERTY(BlueprintAssignable, Category = "Rotatable|Events")
 	FOnRotatableComponentRotated OnRotated;
@@ -69,7 +69,7 @@ protected:
 
 private:
 	bool bIsBeingHeld = false;
-	float CurrentAngle = 0.0f;
+	float CurrentPivotAngle = 0.0f;
 	FQuat BaseRotationQuat;
 
 	FVector2D VirtualMousePosition = FVector2D::ZeroVector;

@@ -126,18 +126,18 @@ void URotatableComponent::ProcessInputDelta(FVector2D InputDelta, UInteractorCom
 	float InvertMultiplier = bInvertRotation ? -1.0f : 1.0f;
 
 	// Update the rotation progress based on perspective and inversion settings
-	CurrentAngle += (VisualDelta * PerspectiveMultiplier * InvertMultiplier);
+	CurrentPivotAngle += (VisualDelta * PerspectiveMultiplier * InvertMultiplier);
 
 	if (bHasLimits)
 	{
-		CurrentAngle = FMath::Clamp(CurrentAngle, MinAngle, MaxAngle);
-		OnRotated.Broadcast(CurrentAngle);
+		CurrentPivotAngle = FMath::Clamp(CurrentPivotAngle, MinAngle, MaxAngle);
+		OnRotated.Broadcast(CurrentPivotAngle);
 	}
 
 	// Apply the rotation to the physical mesh. 
 	// Re-apply the InvertMultiplier so the visual spin matches the mouse gesture, 
-	// while keeping CurrentAngle safely within positive limits.
-	float AppliedMeshAngle = CurrentAngle * InvertMultiplier;
+	// while keeping CurrentPivotAngle safely within positive limits.
+	float AppliedMeshAngle = CurrentPivotAngle * InvertMultiplier;
 
 	FQuat DeltaQuat(LocalAxisVector, FMath::DegreesToRadians(AppliedMeshAngle));
 	FQuat NewRotation = BaseRotationQuat * DeltaQuat;
