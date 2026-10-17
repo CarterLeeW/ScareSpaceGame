@@ -265,11 +265,32 @@ void UPivotableComponent::UpdateClosedState()
 		return;
 	}
 
-	FRotator DeltaRotator = PivotableParentMeshComponent->GetComponentRotation() - BaseRotation;
-	DeltaRotator.Normalize();
+	// 1. Get current and base orientations as Quaternions
+	const FQuat CurrentQuat = PivotableParentMeshComponent->GetComponentRotation().Quaternion();
+	const FQuat BaseQuat = BaseRotation.Quaternion();
 
-	float YawAngle = FMath::Abs(DeltaRotator.Yaw);
+	// 2. Compute local delta (Inverse removes the world actor orientation)
+	const FQuat LocalDeltaQuat = BaseQuat.Inverse() * CurrentQuat;
+	FRotator DeltaRotator = LocalDeltaQuat.Rotator();
+
+	// 3. Unwind Yaw angle so range is normalized between -180 and 180
+	float YawAngle = FMath::Abs(FMath::UnwindDegrees(DeltaRotator.Yaw));
 	bIsClosed = (YawAngle <= ClosedAngle);
+
+	// On-screen debug readout
+	if (GEngine)
+	{
+		FString DebugMsg = FString::Printf(
+			TEXT("[%s] LocalYawDelta: %.2f | ClosedAngle: %.2f | bIsClosed: %s"),
+			*GetOwner()->GetName(),
+			YawAngle,
+			ClosedAngle,
+			bIsClosed ? TEXT("TRUE") : TEXT("FALSE")
+		);
+
+		const uint64 DebugKey = static_cast<uint64>(GetTypeHash(this));
+		GEngine->AddOnScreenDebugMessage(DebugKey, 0.0f, bIsClosed ? FColor::Green : FColor::Red, DebugMsg);
+	}
 }
 
 void UPivotableComponent::OnUnlocked()
