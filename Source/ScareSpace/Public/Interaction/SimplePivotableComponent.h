@@ -60,15 +60,19 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Setup")
 	bool bReverseDirection = false;
 
+	// If the pivotable mesh has a 90 degree rotation this should be true
+	UPROPERTY(EditAnywhere, Category = "Setup")
+	bool bUseMeshForwardVector = false;
+
+	// Affects which way the mouse wants to drag the door. 
+	UPROPERTY(EditAnywhere, Category = "Setup")
+	bool bInvertDragAxis = false;
+
 	UPROPERTY(EditAnywhere, Category = "Setup")
 	float ClosedAngleThreshold = 3.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Setup|Sensitivity")
 	float DragSensitivity = 1.5f;
-
-	// Affects which way the mouse wants to drag the door. 
-	UPROPERTY(EditAnywhere, Category = "Setup|Sensitivity")
-	bool bInvertDragAxis = false;
 
 	UPROPERTY(EditAnywhere, Category = "Setup|Input")
 	TObjectPtr<UInputMappingContext> PivotingMappingContext = nullptr;

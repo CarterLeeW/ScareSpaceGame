@@ -99,7 +99,7 @@ bool USimplePivotableComponent::BeginInteraction(UInteractorComponent* Interacto
 		FVector PlayerLocation = Interactor->GetOwner()->GetActorLocation();
 
 		// Use Right Vector (+Y) since mesh +X is aligned along the panel length | Negated to get the desired vector
-		FVector PivotableFacingVector = (PivotableParentMeshComponent->GetRightVector());
+		FVector PivotableFacingVector = bUseMeshForwardVector? PivotableParentMeshComponent->GetForwardVector() : PivotableParentMeshComponent->GetRightVector();
 		if (bReverseDirection)
 		{
 			PivotableFacingVector *= -1.0f;
