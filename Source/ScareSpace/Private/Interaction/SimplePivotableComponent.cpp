@@ -12,6 +12,7 @@
 USimplePivotableComponent::USimplePivotableComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.SetTickFunctionEnable(true);
 }
 
 void USimplePivotableComponent::BeginPlay()
@@ -216,6 +217,7 @@ void USimplePivotableComponent::OpenPivotableProgrammatically(float TargetAngle,
 		return;
 	}
 
+	bIsLocked = false;
 	bIsGrabbed = false;
 	bIsAnimatingProgrammatically = true;
 	TargetPivotAngle = FMath::Clamp(TargetAngle, 0.0f, MaxOpenAngle);
