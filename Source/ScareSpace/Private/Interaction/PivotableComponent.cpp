@@ -43,12 +43,50 @@ void UPivotableComponent::BeginPlay()
 		PivotableParentMeshComponent = Cast<UStaticMeshComponent>(GetAttachParent());
 	}
 
-	if (PivotableParentMeshComponent && HingeComponent)
+	// --- LOUD FAILURE CHECKS ---
+	bool bHasFatalError = false;
+
+	if (!PivotableParentMeshComponent)
 	{
-		BaseRotation = PivotableParentMeshComponent->GetComponentRotation();
-		HingeComponent->SetRelativeRotation(HingeStartingRotation);
-		PivotableParentMeshComponent->SetSimulatePhysics(true);
+		UE_LOG(LogInteraction, Error, TEXT("[FATAL] %s on Actor '%s' failed to find PivotableParentMeshComponent! Check 'PivotableParentMeshName' (%s)."),
+			*GetName(), *GetOwner()->GetName(), *PivotableParentMeshName.ToString());
+		bHasFatalError = true;
 	}
+
+	if (!HingeComponent)
+	{
+		UE_LOG(LogInteraction, Error, TEXT("[FATAL] %s on Actor '%s' failed to find HingeComponent! Check 'HingeComponentName' (%s)."),
+			*GetName(), *GetOwner()->GetName(), *HingeComponentName.ToString());
+		bHasFatalError = true;
+	}
+
+	if (!PhysicsConstraintComponent)
+	{
+		UE_LOG(LogInteraction, Error, TEXT("[FATAL] %s on Actor '%s' failed to find PhysicsConstraintComponent! Check 'PhysicsConstraintName' (%s)."),
+			*GetName(), *GetOwner()->GetName(), *PhysicsConstraintName.ToString());
+		bHasFatalError = true;
+	}
+
+	if (bHasFatalError)
+	{
+		if (GEngine)
+		{
+			FString FatalMsg = FString::Printf(
+				TEXT("!!! FATAL SETUP ERROR on [%s] !!!\nCheck Output Log for missing component names!"),
+				*GetOwner()->GetName()
+			);
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FatalMsg);
+		}
+
+		// Disable tick so we don't attempt to process invalid pointers in TickComponent
+		PrimaryComponentTick.SetTickFunctionEnable(false);
+		return;
+	}
+
+	// --- SETUP CONTINUES ONLY IF ALL COMPONENTS ARE VALID ---
+	BaseRotation = PivotableParentMeshComponent->GetComponentRotation();
+	HingeComponent->SetRelativeRotation(HingeStartingRotation);
+	PivotableParentMeshComponent->SetSimulatePhysics(true);
 
 	if (!bCanClose && PhysicsConstraintComponent)
 	{
@@ -275,10 +313,11 @@ void UPivotableComponent::UpdateClosedState()
 
 	// 3. Unwind Yaw angle so range is normalized between -180 and 180
 	float YawAngle = FMath::Abs(FMath::UnwindDegrees(DeltaRotator.Yaw));
+
 	bIsClosed = (YawAngle <= ClosedAngle);
 
 	// On-screen debug readout
-	if (GEngine)
+	/*if (GEngine)
 	{
 		FString DebugMsg = FString::Printf(
 			TEXT("[%s] LocalYawDelta: %.2f | ClosedAngle: %.2f | bIsClosed: %s"),
@@ -290,7 +329,7 @@ void UPivotableComponent::UpdateClosedState()
 
 		const uint64 DebugKey = static_cast<uint64>(GetTypeHash(this));
 		GEngine->AddOnScreenDebugMessage(DebugKey, 0.0f, bIsClosed ? FColor::Green : FColor::Red, DebugMsg);
-	}
+	}*/
 }
 
 void UPivotableComponent::OnUnlocked()
