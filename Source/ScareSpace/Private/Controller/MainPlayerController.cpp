@@ -96,6 +96,49 @@ void AMainPlayerController::SetMenuState(bool bIsMenuOpen, UUserWidget* MenuWidg
 	}
 }
 
+void AMainPlayerController::DisablePlayerInput()
+{
+	if (!InputConfig)
+	{
+		return;
+	}
+
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		ActiveContextSnapshot.Empty();
+		for (UInputMappingContext* IMC : InputConfig->AllGameplayContexts)
+		{
+			int32 CurrentPriority = 0;
+			if (Subsystem->HasMappingContext(IMC, CurrentPriority))
+			{
+				ActiveContextSnapshot.Add(IMC, CurrentPriority);
+			}
+		}
+		Subsystem->ClearAllMappings();
+	}
+	
+}
+
+void AMainPlayerController::EnablePlayerInput()
+{
+	if (!InputConfig)
+	{
+		return;
+	}
+
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		for (const TPair<UInputMappingContext*, int32>& Pair : ActiveContextSnapshot)
+		{
+			if (Pair.Key)
+			{
+				Subsystem->AddMappingContext(Pair.Key, Pair.Value);
+			}
+		}
+		ActiveContextSnapshot.Empty();
+	}
+}
+
 void AMainPlayerController::Jump()
 {
 	PlayerCharacter->Jump();

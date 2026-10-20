@@ -65,6 +65,13 @@ public:
 
 	bool bIsInMenuState = false;
 
+	// Temporarily disables all input for the player controller
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void DisablePlayerInput();
+	// Re-enables all input for the player controller
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void EnablePlayerInput();
+
 protected:
 	/* Begin MappingContexts */
 	
