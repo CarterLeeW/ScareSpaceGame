@@ -20,8 +20,15 @@ class SCARESPACE_API USimpleFlashlightComponent : public USpotLightComponent
 public:
 	USimpleFlashlightComponent();
 
+	// Toggles flashlight on or off if allowed
 	UFUNCTION(BlueprintCallable, Category = "Flashlight")
 	void ToggleFlashlight();
+	// Forces flashlight on
+	UFUNCTION(BlueprintCallable, Category = "Flashlight")
+	void TurnFlashlightOn();
+	// Forces flashlight off
+	UFUNCTION(BlueprintCallable, Category = "Flashlight")
+	void TurnFlashlightOff();
 	UFUNCTION(BlueprintCallable, Category = "Flashlight")
 	void SetCanUse(bool bNewCanUse) { bCanUse = bNewCanUse; }
 	UFUNCTION(BlueprintCallable, Category = "Flashlight")

@@ -37,6 +37,26 @@ void USimpleFlashlightComponent::ToggleFlashlight()
 	}
 }
 
+void USimpleFlashlightComponent::TurnFlashlightOn()
+{
+	if (FlashlightOnSound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), FlashlightOnSound);
+	}
+	SetIntensity(BaseIntensity);
+	bIsOn = true;
+}
+
+void USimpleFlashlightComponent::TurnFlashlightOff()
+{
+	if (FlashlightOffSound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), FlashlightOffSound);
+	}
+	SetIntensity(0.0f);
+	bIsOn = false;
+}
+
 void USimpleFlashlightComponent::BeginPlay()
 {
 	Super::BeginPlay();
