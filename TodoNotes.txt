@@ -1,0 +1,5 @@
+Fix note title. It is cut off.
+Adjust padding for note content.
+Remove title from journal menu
+Add note viewing sequence for first time viewing
+Maybe add a read only note type (later)
