@@ -29,12 +29,6 @@ public:
 	// Forces flashlight off
 	UFUNCTION(BlueprintCallable, Category = "Flashlight")
 	void TurnFlashlightOff();
-	UFUNCTION(BlueprintCallable, Category = "Flashlight")
-	void SetCanUse(bool bNewCanUse) { bCanUse = bNewCanUse; }
-	UFUNCTION(BlueprintCallable, Category = "Flashlight")
-	bool GetIsOn() const { return bIsOn; }
-	UFUNCTION(BlueprintCallable, Category = "Flashlight")
-	bool GetCanUse() const { return bCanUse; }
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flashlight")
 	float BaseIntensity = 5000.0f;
@@ -43,7 +37,10 @@ public:
 	UInputMappingContext* FlashlightMappingContext;
 	UPROPERTY(EditDefaultsOnly, Category = "Flashlight")
 	UInputAction* ToggleFlashlightAction;
-	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Flashlight")
+	bool bCanUse = true;
+	UPROPERTY(BlueprintReadOnly, Category = "Flashlight")
+	bool bIsOn = false;
 
 protected:
 	virtual void BeginPlay() override;
@@ -51,10 +48,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio", meta = (AllowPrivateAccess = "true"))
 	USoundBase* FlashlightOnSound;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio", meta = (AllowPrivateAccess = "true"))
-	USoundBase* FlashlightOffSound;
-
-private:
-	bool bIsOn = false;
-	bool bCanUse = true;
+	USoundBase* FlashlightOffSound;	
 	
 };
