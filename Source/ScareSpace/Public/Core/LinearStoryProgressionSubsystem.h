@@ -23,6 +23,7 @@ enum class EStoryPhase : uint8
     FindCabinetKey,
     RetrieveGrimoire,
     AnswerPhone2,
+    // graveyard scene?
     UnlockSubBasementDoor,
     FleeMonster,
     ExplorePrison,
