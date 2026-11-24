@@ -7,3 +7,8 @@ Maybe add a read only note type (later)
 TV sequence
 
 Make memento entry sound and visual effect
+
+Key tag name for door key
+
+Do cat stuff
+Change old man mesh
