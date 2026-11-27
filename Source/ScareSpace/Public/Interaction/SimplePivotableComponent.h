@@ -11,6 +11,14 @@ class UInputMappingContext;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSimplePivotableRestStateChanged, bool, bIsAtRest);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSimplePivotableLockStateChanged, bool, bIsLocked);
 
+UENUM(BlueprintType)
+enum class EDragAxis : uint8
+{
+	Roll,
+	Pitch,
+	Yaw
+};
+
 UCLASS(ClassGroup = (Custom), ClassGroup = (Interaction), meta = (BlueprintSpawnableComponent))
 class SCARESPACE_API USimplePivotableComponent : public UInteractableComponent
 {
@@ -70,6 +78,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Setup")
 	float ClosedAngleThreshold = 3.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Setup")
+	EDragAxis DragAxis = EDragAxis::Yaw;
 
 	UPROPERTY(EditAnywhere, Category = "Setup|Sensitivity")
 	float DragSensitivity = 1.5f;

@@ -248,8 +248,18 @@ void USimplePivotableComponent::ApplyRotation(float NewAngle)
 	float DirectionMultiplier = bReverseDirection ? -1.0f : 1.0f;
 
 	FRotator NewRelativeRotation = BaseRelativeRotation;
-	NewRelativeRotation.Yaw += NewAngle * DirectionMultiplier;
-
+	switch (DragAxis)
+	{
+	case EDragAxis::Roll:
+		NewRelativeRotation.Roll += NewAngle * DirectionMultiplier;
+		break;
+	case EDragAxis::Pitch:
+		NewRelativeRotation.Pitch += NewAngle * DirectionMultiplier;
+		break;
+	case EDragAxis::Yaw:
+		NewRelativeRotation.Yaw += NewAngle * DirectionMultiplier;
+		break;
+	}
 	PivotableParentMeshComponent->SetRelativeRotation(NewRelativeRotation);
 }
 

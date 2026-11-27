@@ -12,3 +12,5 @@ Key tag name for door key
 
 Do cat stuff
 DONE - Change old man mesh
+
+Add dark background to dialogue so I can see
