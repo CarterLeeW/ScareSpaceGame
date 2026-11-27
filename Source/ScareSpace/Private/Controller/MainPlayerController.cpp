@@ -139,6 +139,20 @@ void AMainPlayerController::EnablePlayerInput()
 	}
 }
 
+void AMainPlayerController::LockCameraToLocation()
+{
+}
+
+void AMainPlayerController::ReleaseCameraLock()
+{
+}
+
+void AMainPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	GetWorldTimerManager().ClearTimer(CameraLockTimerHandle);
+	Super::EndPlay(EndPlayReason);
+}
+
 void AMainPlayerController::Jump()
 {
 	PlayerCharacter->Jump();
@@ -257,4 +271,8 @@ void AMainPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMainPlayerController::Look);
 
 	}
+}
+
+void AMainPlayerController::UpdateCameraLock()
+{
 }

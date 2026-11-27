@@ -71,8 +71,14 @@ public:
 	// Re-enables all input for the player controller
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void EnablePlayerInput();
+	UFUNCTION(BlueprintCallable, Category = "Camera")
+	void LockCameraToLocation();
+	UFUNCTION(BlueprintCallable, Category = "Camera")
+	void ReleaseCameraLock();
 
 protected:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	/* Begin MappingContexts */
 	
 	/** Input Mapping Context to be used for simple input */
@@ -119,5 +125,17 @@ protected:
 	// End Actor interface
 
 	virtual void SetupInputComponent() override;
+
+private:
+	void UpdateCameraLock();
+
+	FTimerHandle CameraLockTimerHandle;
+	FVector LookAtTargetLocation;
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float LookInterpSpeed = 8.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float CameraUpdateInterval = 0.01f;
 
 };
